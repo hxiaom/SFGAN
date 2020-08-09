@@ -1,5 +1,5 @@
 from base.base_data_loader import BaseDataLoader
-from data_loader.tree import ClassNode
+from utils.tree import ClassNode
 
 from nltk import tokenize
 from keras.preprocessing.text import Tokenizer, text_to_word_sequence

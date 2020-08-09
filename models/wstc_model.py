@@ -1,6 +1,4 @@
 from keras.engine.topology import Layer, InputSpec
-from data_loader.nsfc_data_loader import NsfcDataLoader
-
 from base.base_model import BaseModel
 from keras.models import Sequential
 from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Flatten, Embedding, Lambda, Multiply, Concatenate

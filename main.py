@@ -1,7 +1,5 @@
 from data_loader.nsfc_data_loader import NsfcHierDataLoader
 from data_loader.functionality_data_loader import FunctionalityDataLoader
-from models.fgan_model import FganModel
-from models.wstc_model import NsfcHierModel
 from models.wstc_model import NsfcHierModel
 from trainers.fgan_trainer import FganModelTrainer
 from utils.utils import process_config, create_dirs, get_args
@@ -13,8 +11,6 @@ def main():
     # then process the json configuration file
     try:
         args = get_args()
-        print(args)
-        # args.config = './configs/fgan_config.json'
         config = process_config(args.config)
     except:
         print("missing or invalid arguments")
@@ -23,25 +19,19 @@ def main():
     # create the experiments dirs
     create_dirs([config.callbacks.tensorboard_log_dir, config.callbacks.checkpoint_dir])
 
-    print('Create the data generator.')
-    # data_loader = NsfcDataLoader(config)
-
+    print('Load data')
     data_loader = NsfcHierDataLoader(config)
     class_tree = data_loader.get_class_tree()
     max_level = class_tree.get_height()
 
+    wstc = NsfcHierModel(config, class_tree)
+
     func_data_loader = FunctionalityDataLoader(config)
-    X, y, length, matrix = func_data_loader.get_train_data()
-
-
-    print(y)
-
+    X_func, y_func, word_length_func, embedding_matrix_func = func_data_loader.get_train_data()
+    wstc.train_func(X_func, y_func, word_length_func, embedding_matrix_func)
 
     word_index_length, embedding_matrix = data_loader.get_embedding_matrix()
-
-    wstc = NsfcHierModel(config, class_tree)
-    # wstc = NsfcHierModel(config, None)
-    wstc.train_func(X, y, length, matrix)
+    
 
     # train each level
     models = {}
@@ -54,25 +44,9 @@ def main():
             wstc.instantiate(class_tree=parent, word_index_length=word_index_length, embedding_matrix=embedding_matrix)
             
             if parent.model is not None:
-                print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
                 print(parent.model)
-                print('!!!!!!!!!!!!!!!!!!!!!!!!!!')
                 data = data_loader.get_train_data_by_code(parent.name)
-                print(data[0].shape)
                 wstc.pretrain(data=data, model=parent.model)
-
-            # print('Create the model.')
-            # model = FganModel(config)
-
-            # print('Create the trainer')
-            # trainer = FganModelTrainer(model.model, data_loader.get_train_data_by_code(parent.name), config)
-            
-            # print('Start training the model.')
-            # trainer.train()
-
-            # parent.model = model
-        
-        # print(class_tree.visualize_tree())
 
         global_classifier = wstc.ensemble_classifier(level, class_tree)
         if global_classifier == None:

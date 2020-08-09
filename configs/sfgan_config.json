@@ -1,0 +1,33 @@
+{
+    "exp": {
+      "name": "1st test"
+    },
+    "data_loader": {
+      "name": "nsfc_data_loader.NsfcDataLoader",
+      "MAX_SENT_LENGTH": 50,
+      "MAX_SENTS": 10,
+      "MAX_NB_WORDS": 10000,
+      "EMBEDDING_DIM": 100
+    },
+    "model":{
+      "name": "fgan_model.FganModel",
+      "learning_rate": 0.001,
+      "optimizer": "adadelta",
+      "output_num": 99
+    },
+    "trainer":{
+      "name": "fgan_trainer.FganModelTrainer",
+      "num_epochs": 20,
+      "batch_size": 64,
+      "validation_split":0.25,
+      "verbose_training": true
+    },
+    "callbacks":{
+      "checkpoint_monitor": "val_loss",
+      "checkpoint_mode": "min",
+      "checkpoint_save_best_only": true,
+     "checkpoint_save_weights_only": true,
+      "checkpoint_verbose": true,
+      "tensorboard_write_graph": true
+    }
+  }
