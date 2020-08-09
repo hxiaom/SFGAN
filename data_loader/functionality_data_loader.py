@@ -33,7 +33,7 @@ class FunctionalityDataLoader(BaseDataLoader):
         for c in classes:
             labels.append(class_to_label[c])
 
-        tokenizer = Tokenizer(nb_words=self.config.data_loader.MAX_NB_WORDS)
+        tokenizer = Tokenizer(num_words=self.config.data_loader.MAX_NB_WORDS)
         tokenizer.fit_on_texts(texts)
         # sequences = tokenizer.texts_to_sequences(texts)
 
