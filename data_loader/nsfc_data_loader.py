@@ -154,7 +154,6 @@ class NsfcHierDataLoader(BaseDataLoader):
 
             y = np.zeros((len(self.X_train), 91), dtype='int32')
             X_train = []
-            # return [X_train, y]
 
             count = 0
             ind = 0

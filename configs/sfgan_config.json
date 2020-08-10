@@ -1,6 +1,6 @@
 {
     "exp": {
-      "name": "1st test"
+      "name": "test_1"
     },
     "data_loader": {
       "name": "nsfc_data_loader.NsfcDataLoader",
@@ -15,6 +15,13 @@
       "optimizer": "adadelta",
       "output_num": 99
     },
+    "func_trainer":{
+      "name": "fgan_trainer.FganModelTrainer",
+      "num_epochs": 20,
+      "batch_size": 64,
+      "validation_split":0.25,
+      "verbose_training": true
+    },
     "trainer":{
       "name": "fgan_trainer.FganModelTrainer",
       "num_epochs": 20,
@@ -26,7 +33,7 @@
       "checkpoint_monitor": "val_loss",
       "checkpoint_mode": "min",
       "checkpoint_save_best_only": true,
-     "checkpoint_save_weights_only": true,
+      "checkpoint_save_weights_only": true,
       "checkpoint_verbose": true,
       "tensorboard_write_graph": true
     }
