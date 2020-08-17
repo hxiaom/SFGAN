@@ -19,17 +19,17 @@ def main():
     # load data
     print('load NSFC data')
     data_loader = NsfcHierDataLoader(config)
+    word_index_length, embedding_matrix = data_loader.get_embedding_matrix()
     class_tree = data_loader.get_class_tree()
     max_level = class_tree.get_height()
 
-    print('load functionality data')
+    print('load sentence functionality data')
     func_data_loader = FunctionalityDataLoader(config)
     X_func, y_func, word_length_func, embedding_matrix_func = func_data_loader.get_train_data()
 
     # train functionality model
     nsfc_hier_model = NsfcHierModel(config, class_tree)
-    nsfc_hier_model.train_func(X_func, y_func, word_length_func, embedding_matrix_func)
-    word_index_length, embedding_matrix = data_loader.get_embedding_matrix()
+    nsfc_hier_model.train_func_classification_model(X_func, y_func, word_length_func, embedding_matrix_func)
 
     # train each level
     for level in range(max_level):
@@ -45,10 +45,10 @@ def main():
                 nsfc_hier_model.pretrain(data=data, model=parent.model)
 
         # train global classifier
-        print("\n### Phase 2: self-training ###")
+        print("\n### Phase 2: train global classifier ###")
         global_classifier = nsfc_hier_model.ensemble_classifier(level, class_tree)
         if global_classifier == None:
-            print('Global classifier is NONE')
+            print('Global classifier is None')
         else:
             print(global_classifier.summary())
 
