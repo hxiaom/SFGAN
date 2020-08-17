@@ -1,0 +1,1 @@
+python main.py -c ./configs/sfgan_config.json 
