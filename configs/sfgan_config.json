@@ -10,24 +10,22 @@
       "EMBEDDING_DIM": 100
     },
     "model":{
-      "name": "fgan_model.FganModel",
-      "learning_rate": 0.001,
-      "optimizer": "adadelta",
-      "output_num": 99
+      "name": "sfgan_model.SfganModel"
     },
     "func_trainer":{
-      "name": "fgan_trainer.FganModelTrainer",
+      "name": "sfgan_trainer.FuncModelTrainer",
       "num_epochs": 20,
-      "batch_size": 64,
-      "validation_split":0.25,
-      "verbose_training": true
+      "batch_size": 64
     },
-    "trainer":{
-      "name": "fgan_trainer.FganModelTrainer",
+    "local_trainer":{
+      "name": "sfgan_trainer.LocalModelTrainer",
       "num_epochs": 20,
-      "batch_size": 64,
-      "validation_split":0.25,
-      "verbose_training": true
+      "batch_size": 64
+    },
+    "global_trainer":{
+      "name": "sfgan_trainer.GlobalModelTrainer",
+      "num_epochs": 20,
+      "batch_size": 64
     },
     "callbacks":{
       "checkpoint_monitor": "val_loss",

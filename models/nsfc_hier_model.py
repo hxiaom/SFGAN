@@ -121,7 +121,9 @@ class NsfcHierModel(BaseModel):
         self.func_model.compile(loss='categorical_crossentropy',
                 optimizer='adam',
                 metrics=['acc'])
-        self.func_model.fit(X, y)
+        self.func_model.fit(X, y,
+                            batch_size=self.config.func_trainer.batch_size, 
+                            epochs=self.config.func_trainer.num_epochs)
         for k,v in self.func_model._get_trainable_state().items():
             k.trainable = False
         return
@@ -140,7 +142,10 @@ class NsfcHierModel(BaseModel):
               metrics=['acc'])
         t0 = time()
         print('\nPretraining...')
-        model.fit(data[0], data[1], batch_size=64, epochs=1)
+        model.fit(data[0], 
+                data[1], 
+                batch_size=self.config.local_trainer.batch_size, 
+                epochs=self.config.local_trainer.num_epochs)
         print(f'Pretraining time: {time() - t0:.2f}s')
 
         model.save_weights(f'{self.config.callbacks.checkpoint_dir}/pretrained_func_classification.h5')
@@ -168,7 +173,10 @@ class NsfcHierModel(BaseModel):
 
     def fit(self, data, level):
         model = self.model[level]
-        model.fit(data[0], data[1], batch_size=64, epochs=1)
+        model.fit(data[0], 
+                data[1], 
+                batch_size=self.config.global_trainer.batch_size, 
+                epochs=self.config.global_trainer.num_epochs)
 
         model.save_weights(f'{self.config.callbacks.checkpoint_dir}/{level}.h5')
         return

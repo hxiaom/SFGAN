@@ -58,8 +58,8 @@ class NsfcHierDataLoader(BaseDataLoader):
 
         self.X_train = data
         self.y_train = labels
-        self.X_test = data
-        self.y_test = labels
+        self.X_test = None
+        self.y_test = None
 
         GLOVE_DIR = "./data"
         embeddings_index = {}
