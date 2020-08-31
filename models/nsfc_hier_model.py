@@ -1,7 +1,9 @@
+# TODO: mask_zero
+
 from keras.engine.topology import Layer, InputSpec
 from base.base_model import BaseModel
 from keras.models import Sequential
-from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Flatten, Embedding, Lambda, Multiply, Concatenate
+from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Flatten, Embedding, Lambda, Multiply, Concatenate, Masking
 from keras.layers import Conv1D, MaxPooling1D, Dropout, LSTM, GRU, Bidirectional, TimeDistributed, Attention, GlobalAveragePooling1D
 from keras import initializers
 from keras import backend as K
@@ -55,17 +57,10 @@ class AttLayer(Layer):
         return (input_shape[0], input_shape[-1])
 
 class NsfcHierModel(BaseModel):
-    def __init__(self, config, class_tree):
-        super(NsfcHierModel, self).__init__(config)
-        self.class_tree = class_tree
+    def __init__(self, configs):
+        super(NsfcHierModel, self).__init__(configs)
         self.model = []
-        self.eval_set = None
-        self.sup_dict = {}
-        self.block_label = {}
-        self.siblings_map = {}
-        self.block_level = 1
-        self.block_thre = 1.0
-        self.input_shape = (self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH)
+        # self.input_shape = (self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH)
         self.x = Input(shape=(self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH), dtype='int32')
 
     def SfganModel(self, n_classes, word_index_length, embedding_matrix):
@@ -73,9 +68,48 @@ class NsfcHierModel(BaseModel):
                                     self.config.data_loader.EMBEDDING_DIM,
                                     weights=[embedding_matrix],
                                     input_length=self.config.data_loader.MAX_SENT_LENGTH,
-                                    trainable=True,
-                                    mask_zero=True)
+                                    trainable=False
+                                    # mask_zero=True  # mask will report ERROR: CUDNN_STATUS_BAD_PARAM
+                                    )
 
+        # embedding_layer = Masking(mask_value=0)(embedding_layer)
+        sentence_input = Input(shape=(self.config.data_loader.MAX_SENT_LENGTH,), dtype='int32')
+        embedded_sequences = embedding_layer(sentence_input)
+        l_lstm = Bidirectional(GRU(25, return_sequences=True))(embedded_sequences)
+        l_att = AttLayer(25)(l_lstm)
+        sentEncoder = Model(sentence_input, l_att)
+        # c = GlobalAveragePooling1D()(embedded_sequences)
+        # d = Dense(50)(c)
+        # sentEncoder = Model(sentence_input, d)
+
+        review_input = Input(shape=(self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH), dtype='int32')
+        review_encoder = TimeDistributed(sentEncoder)(review_input)
+        l_lstm_sent = Bidirectional(GRU(25, return_sequences=True))(review_encoder)
+
+        func_classification_model = Model(self.func_model.input, self.func_model.layers[-2].output)
+        func_encoder = TimeDistributed(func_classification_model)(review_input)
+
+        query_value_attention_seq = Attention()([l_lstm_sent, func_encoder])
+        query_encoding = GlobalAveragePooling1D()(
+            func_encoder)
+        query_value_attention = GlobalAveragePooling1D()(
+            query_value_attention_seq)
+        l_att_sent = Concatenate()(
+            [query_encoding, query_value_attention])
+        preds = Dense(n_classes, activation='softmax')(l_att_sent)
+        model = Model(review_input, preds)
+        return model
+
+    def HanModel(self, n_classes, word_index_length, embedding_matrix):
+        embedding_layer = Embedding(word_index_length + 1,
+                                    self.config.data_loader.EMBEDDING_DIM,
+                                    weights=[embedding_matrix],
+                                    input_length=self.config.data_loader.MAX_SENT_LENGTH,
+                                    trainable=True
+                                    # mask_zero=True  # mask will report ERROR: CUDNN_STATUS_BAD_PARAM
+                                    )
+
+        # embedding_layer = Masking(mask_value=0)(embedding_layer)
         sentence_input = Input(shape=(self.config.data_loader.MAX_SENT_LENGTH,), dtype='int32')
         embedded_sequences = embedding_layer(sentence_input)
         l_lstm = Bidirectional(GRU(50, return_sequences=True))(embedded_sequences)
@@ -105,13 +139,15 @@ class NsfcHierModel(BaseModel):
                                     self.config.data_loader.EMBEDDING_DIM,
                                     weights=[embedding_matrix],
                                     input_length=self.config.data_loader.MAX_SENT_LENGTH,
-                                    trainable=True,
-                                    mask_zero=True)
+                                    trainable=True
+                                    # mask_zero=True  # mask will report ERROR: CUDNN_STATUS_BAD_PARAM
+                                    )
+        # embedding_layer = Masking(mask_value=0)(embedding_layer)
         sentence_input = Input(shape=(self.config.data_loader.MAX_SENT_LENGTH,), dtype='int32')
         embedded_sequences = embedding_layer(sentence_input)
         lstm = Bidirectional(GRU(50, return_sequences=True))(embedded_sequences)
         flat = Flatten()(lstm)
-        dense = Dense(100, activation='relu')(flat)
+        dense = Dense(50, activation='relu')(flat)
         preds = Dense(5, activation='softmax')(dense)
         model = Model(sentence_input, preds)
         return model
@@ -122,8 +158,11 @@ class NsfcHierModel(BaseModel):
                 optimizer='adam',
                 metrics=['acc'])
         self.func_model.fit(X, y,
-                            batch_size=self.config.func_trainer.batch_size, 
-                            epochs=self.config.func_trainer.num_epochs)
+                            batch_size=self.config.func_trainer.batch_size,
+                            # batch_size=1, 
+                            epochs=self.config.func_trainer.num_epochs,
+                            validation_split=self.config.func_trainer.validation_split
+                            )
         for k,v in self.func_model._get_trainable_state().items():
             k.trainable = False
         return
@@ -145,7 +184,8 @@ class NsfcHierModel(BaseModel):
         model.fit(data[0], 
                 data[1], 
                 batch_size=self.config.local_trainer.batch_size, 
-                epochs=self.config.local_trainer.num_epochs)
+                epochs=self.config.local_trainer.num_epochs,
+                validation_split=self.config.local_trainer.validation_split)
         print(f'Pretraining time: {time() - t0:.2f}s')
 
         model.save_weights(f'{self.config.callbacks.checkpoint_dir}/pretrained_func_classification.h5')
@@ -157,10 +197,9 @@ class NsfcHierModel(BaseModel):
             children = class_tree.children
             outputs = []
             for i, child in enumerate(children):
+                print('ensemble node', child.name)
                 a = IndexLayer(i)(class_tree.model(self.x))
                 b = child.model(self.x)
-                print(a.shape)
-                print(b.shape)
                 c = Multiply()([a, b])
                 outputs.append(c)
             z = Concatenate()(outputs)
@@ -169,14 +208,16 @@ class NsfcHierModel(BaseModel):
         return result_classifier
 
     def compile(self, level, optimizer='adam', loss='categorical_crossentropy'):
-        self.model[level].compile(optimizer=optimizer, loss=loss)
+        self.model[level].compile(optimizer=optimizer, loss=loss, metrics=['acc'])
 
     def fit(self, data, level):
         model = self.model[level]
+        print('start fitting')
         model.fit(data[0], 
                 data[1], 
                 batch_size=self.config.global_trainer.batch_size, 
-                epochs=self.config.global_trainer.num_epochs)
+                epochs=self.config.global_trainer.num_epochs,
+                validation_split=self.config.global_trainer.validation_split)
 
         model.save_weights(f'{self.config.callbacks.checkpoint_dir}/{level}.h5')
         return
