@@ -1,5 +1,4 @@
-# TODO: training too slow. Maybe some variables are not in GPU memory. 
-#       After training, it still wait a long time before program end.
+# TODO: training too slow. Maybe some variables are not in GPU memory or too large.
 
 from data_loader.nsfc_data_loader import NsfcHierDataLoader
 from data_loader.functionality_data_loader import FunctionalityDataLoader
@@ -8,6 +7,7 @@ from utils.utils import process_config, create_dirs, get_args
 import gc
 from tensorflow.python.client import device_lib
 import tensorflow as tf
+import datetime
 
 def main():
     # if don't add this, it will report ERROR: Fail to find the dnn implementation.
@@ -80,8 +80,28 @@ def main():
         nsfc_hier_model.compile(level)
         print('load data')
         level_data = data_loader.get_train_data_by_level(level)
-        print('fit')
+        print('fit', datetime.datetime.now())
         y_pred = nsfc_hier_model.fit(data=level_data, level=level)
+        time_iter = datetime.datetime.now()
+        print('finish iteration', datetime.datetime.now())
+        show_memory()
+
+    print('finish program', datetime.datetime.now())
+
+def show_memory(unit='KB', threshold=1):
+    '''查看变量占用内存情况
+
+    :param unit: 显示的单位，可为`B`,`KB`,`MB`,`GB`
+    :param threshold: 仅显示内存数值大于等于threshold的变量
+    '''
+    from sys import getsizeof
+    scale = {'B': 1, 'KB': 1024, 'MB': 1048576, 'GB': 1073741824}[unit]
+    for i in list(globals().keys()):
+        # memory = eval("getsizeof({})".format(i)) // scale
+        memory = getsizeof(i)
+        if memory >= threshold:
+            print(i, memory)
 
 if __name__ == '__main__':
     main()
+    print('finish!!!', datetime.datetime.now())

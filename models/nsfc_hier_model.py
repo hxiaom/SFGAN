@@ -13,6 +13,7 @@ from time import time
 import os
 import numpy as np
 import csv
+import datetime
 
 class AttLayer(Layer):
     def __init__(self, attention_dim):
@@ -212,17 +213,36 @@ class NsfcHierModel(BaseModel):
 
     def fit(self, data, level):
         model = self.model[level]
-        print('start fitting')
+        print('start fitting', datetime.datetime.now())
         model.fit(data[0], 
                 data[1], 
                 batch_size=self.config.global_trainer.batch_size, 
                 epochs=self.config.global_trainer.num_epochs,
                 validation_split=self.config.global_trainer.validation_split)
 
+        show_memory()
+        print('finish fitting', datetime.datetime.now())
         model.save_weights(f'{self.config.callbacks.checkpoint_dir}/{level}.h5')
+        print('finish save model', datetime.datetime.now())
+        show_memory()
         return
 
 def IndexLayer(idx):
     def func(x):
         return x[:, idx]
     return Lambda(func)
+
+def show_memory(unit='KB', threshold=1):
+    '''查看变量占用内存情况
+
+    :param unit: 显示的单位，可为`B`,`KB`,`MB`,`GB`
+    :param threshold: 仅显示内存数值大于等于threshold的变量
+    '''
+    from sys import getsizeof
+    scale = {'B': 1, 'KB': 1024, 'MB': 1048576, 'GB': 1073741824}[unit]
+    for i in list(globals().keys()):
+        # memory = eval("getsizeof({})".format(i)) // scale
+        memory = getsizeof(i)
+        if memory >= threshold:
+            print(i, memory)
+
