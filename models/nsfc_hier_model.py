@@ -14,6 +14,7 @@ import os
 import numpy as np
 import csv
 import datetime
+from utils.utils import show_memory
 
 class AttLayer(Layer):
     def __init__(self, attention_dim):
@@ -106,7 +107,7 @@ class NsfcHierModel(BaseModel):
                                     self.config.data_loader.EMBEDDING_DIM,
                                     weights=[embedding_matrix],
                                     input_length=self.config.data_loader.MAX_SENT_LENGTH,
-                                    trainable=True
+                                    trainable=False
                                     # mask_zero=True  # mask will report ERROR: CUDNN_STATUS_BAD_PARAM
                                     )
 
@@ -140,7 +141,7 @@ class NsfcHierModel(BaseModel):
                                     self.config.data_loader.EMBEDDING_DIM,
                                     weights=[embedding_matrix],
                                     input_length=self.config.data_loader.MAX_SENT_LENGTH,
-                                    trainable=True
+                                    trainable=False
                                     # mask_zero=True  # mask will report ERROR: CUDNN_STATUS_BAD_PARAM
                                     )
         # embedding_layer = Masking(mask_value=0)(embedding_layer)
@@ -231,18 +232,3 @@ def IndexLayer(idx):
     def func(x):
         return x[:, idx]
     return Lambda(func)
-
-def show_memory(unit='KB', threshold=1):
-    '''查看变量占用内存情况
-
-    :param unit: 显示的单位，可为`B`,`KB`,`MB`,`GB`
-    :param threshold: 仅显示内存数值大于等于threshold的变量
-    '''
-    from sys import getsizeof
-    scale = {'B': 1, 'KB': 1024, 'MB': 1048576, 'GB': 1073741824}[unit]
-    for i in list(globals().keys()):
-        # memory = eval("getsizeof({})".format(i)) // scale
-        memory = getsizeof(i)
-        if memory >= threshold:
-            print(i, memory)
-

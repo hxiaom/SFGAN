@@ -1,9 +1,10 @@
+# version: 2020.09.02
 # TODO: training too slow. Maybe some variables are not in GPU memory or too large.
 
 from data_loader.nsfc_data_loader import NsfcHierDataLoader
 from data_loader.functionality_data_loader import FunctionalityDataLoader
 from models.nsfc_hier_model import NsfcHierModel
-from utils.utils import process_config, create_dirs, get_args
+from utils.utils import process_config, create_dirs, get_args, show_memory
 import gc
 from tensorflow.python.client import device_lib
 import tensorflow as tf
@@ -88,19 +89,6 @@ def main():
 
     print('finish program', datetime.datetime.now())
 
-def show_memory(unit='KB', threshold=1):
-    '''查看变量占用内存情况
-
-    :param unit: 显示的单位，可为`B`,`KB`,`MB`,`GB`
-    :param threshold: 仅显示内存数值大于等于threshold的变量
-    '''
-    from sys import getsizeof
-    scale = {'B': 1, 'KB': 1024, 'MB': 1048576, 'GB': 1073741824}[unit]
-    for i in list(globals().keys()):
-        # memory = eval("getsizeof({})".format(i)) // scale
-        memory = getsizeof(i)
-        if memory >= threshold:
-            print(i, memory)
 
 if __name__ == '__main__':
     main()

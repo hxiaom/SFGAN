@@ -157,10 +157,12 @@ class NsfcHierDataLoader(BaseDataLoader):
 
             count = 0
             ind = 0
-            for child in children:
+            for i, child in enumerate(children):
                 X_train_temp, y_temp = self.get_train_data_by_code(child.name)
                 X_train.append(X_train_temp)                
                 y[count:count+y_temp.shape[0], ind:ind+y_temp.shape[1]] = y_temp
+                count = count + y_temp.shape[0]
+                ind = ind + y_temp.shape[1]
 
             X_train = np.concatenate(X_train, axis=0)
             return [X_train, y]

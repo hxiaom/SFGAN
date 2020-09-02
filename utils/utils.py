@@ -4,6 +4,7 @@ import os
 import time
 import argparse
 
+# conda list -e > requirements.txt  # output environment list
 
 def get_config_from_json(json_file):
     """
@@ -55,3 +56,9 @@ def get_args():
         help='The Configuration file')
     args = argparser.parse_args()
     return args
+
+def show_memory():
+    from sys import getsizeof
+    for i in list(globals().keys()):
+        memory = getsizeof(i)
+        print(i, memory)
