@@ -1,5 +1,3 @@
-# TODO: mask_zero
-
 from keras.engine.topology import Layer, InputSpec
 from base.base_model import BaseModel
 from keras.models import Sequential
@@ -177,7 +175,7 @@ class NsfcHierModel(BaseModel):
         else:
             class_tree.model = self.SfganModel(num_children, word_index_length, embedding_matrix)
 
-    def pretrain(self, data, model):
+    def pretrain(self, data, data_test, model):
         model.compile(loss='categorical_crossentropy',
               optimizer='adam',
               metrics=['acc'])
@@ -187,7 +185,8 @@ class NsfcHierModel(BaseModel):
                 data[1], 
                 batch_size=self.config.local_trainer.batch_size, 
                 epochs=self.config.local_trainer.num_epochs,
-                validation_split=self.config.local_trainer.validation_split)
+                # validation_split=self.config.local_trainer.validation_split,
+                validation_data = (data_test[0], data_test[1]))
         print(f'Pretraining time: {time() - t0:.2f}s')
 
         model.save_weights(f'{self.config.callbacks.checkpoint_dir}/pretrained_func_classification.h5')

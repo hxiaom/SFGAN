@@ -1,41 +1,41 @@
 {
-    "exp": {
-      "name": "test_1"
-    },
-    "data_loader": {
-      "name": "nsfc_data_loader.NsfcDataLoader",
-      "MAX_SENT_LENGTH": 3,
-      "MAX_SENTS": 10,
-      "MAX_NB_WORDS": 5000,
-      "EMBEDDING_DIM": 100
-    },
-    "model":{
-      "name": "sfgan_model.SfganModel"
-    },
-    "func_trainer":{
-      "name": "sfgan_trainer.FuncModelTrainer",
-      "num_epochs": 1,
-      "batch_size": 64,
-      "validation_split": 0.2
-    },
-    "local_trainer":{
-      "name": "sfgan_trainer.LocalModelTrainer",
-      "num_epochs": 1,
-      "batch_size": 64,
-      "validation_split": 0.2
-    },
-    "global_trainer":{
-      "name": "sfgan_trainer.GlobalModelTrainer",
-      "num_epochs": 1,
-      "batch_size": 64,
-      "validation_split": 0.2
-    },
-    "callbacks":{
-      "checkpoint_monitor": "val_loss",
-      "checkpoint_mode": "min",
-      "checkpoint_save_best_only": true,
-      "checkpoint_save_weights_only": true,
-      "checkpoint_verbose": true,
-      "tensorboard_write_graph": true
-    }
+  "exp": {
+    "name": "test_1"
+  },
+  "data_loader": {
+    "name": "nsfc_data_loader.NsfcDataLoader",
+    "MAX_SENT_LENGTH": 30,
+    "MAX_SENTS": 10,
+    "MAX_NB_WORDS": 10000,
+    "EMBEDDING_DIM": 100
+  },
+  "model":{
+    "name": "sfgan_model.SfganModel"
+  },
+  "func_trainer":{
+    "name": "sfgan_trainer.FuncModelTrainer",
+    "num_epochs": 10,
+    "batch_size": 64,
+    "validation_split": 0.2
+  },
+  "local_trainer":{
+    "name": "sfgan_trainer.LocalModelTrainer",
+    "num_epochs": 10,
+    "batch_size": 64,
+    "validation_split": 0.2
+  },
+  "global_trainer":{
+    "name": "sfgan_trainer.GlobalModelTrainer",
+    "num_epochs": 10,
+    "batch_size": 64,
+    "validation_split": 0.2
+  },
+  "callbacks":{
+    "checkpoint_monitor": "val_loss",
+    "checkpoint_mode": "min",
+    "checkpoint_save_best_only": true,
+    "checkpoint_save_weights_only": true,
+    "checkpoint_verbose": true,
+    "tensorboard_write_graph": true
   }
+}

@@ -1,4 +1,4 @@
-# version: 2020.09.02
+# version: 2020.09.03
 # TODO: training too slow. Maybe some variables are not in GPU memory or too large.
 
 from data_loader.nsfc_data_loader import NsfcHierDataLoader
@@ -26,8 +26,7 @@ def main():
 
     print(device_lib.list_local_devices())
 
-    # capture the config path from the run arguments
-    # then process the json configuration file
+    # capture the config path from the run arguments    # then process the json configuration file
     try:
         args = get_args()
         config = process_config(args.config)
@@ -61,10 +60,11 @@ def main():
         parents = class_tree.find_at_level(level)
         for parent in parents:
             nsfc_hier_model.instantiate(class_tree=parent, word_index_length=word_index_length, embedding_matrix=embedding_matrix)
-            # if parent.model is not None:
-            #     print(parent.model)
-            #     data = data_loader.get_train_data_by_code(parent.name)
-            #     nsfc_hier_model.pretrain(data=data, model=parent.model)
+            if parent.model is not None:
+                print(parent.model)
+                data = data_loader.get_train_data_by_code(parent.name)
+                data_test = data_loader.get_test_data_by_code(parent.name)
+                nsfc_hier_model.pretrain(data=data, data_test=data_test, model=parent.model)
 
         # train global classifier
         print("\n### Phase 2: train global classifier ###")

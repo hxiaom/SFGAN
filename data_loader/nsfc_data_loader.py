@@ -16,7 +16,7 @@ class NsfcHierDataLoader(BaseDataLoader):
         self.data_df, self.class_tree = self.read_file()
 
         abstracts = self.data_df.iloc[:, 1].to_numpy()
-        tags = self.data_df.iloc[:, 2].to_numpy()
+        tags = self.data_df.iloc[:, 3].to_numpy()
 
         reviews = []
         labels = []
@@ -56,10 +56,11 @@ class NsfcHierDataLoader(BaseDataLoader):
         print('Shape of data tensor:', data.shape)
         print('Shape of label tensor:', labels.shape)
 
-        self.X_train = data
-        self.y_train = labels
-        self.X_test = None
-        self.y_test = None
+        self.X_train = data[:33168,:,:]
+        print(self.X_train.shape)
+        self.y_train = labels[:33168,:]
+        self.X_test = data[33168:,:,:]
+        self.y_test = labels[33168:,:]
 
         GLOVE_DIR = "./data"
         embeddings_index = {}
@@ -108,13 +109,16 @@ class NsfcHierDataLoader(BaseDataLoader):
         print(f'Total number of classes: {n_classes}')
         print(class_tree.visualize_tree())
         
-        data_df = pd.read_csv('./data/dataset.txt', sep='\t', header=None, names=['code', 'abstract'])
+        data_df = pd.read_csv('./data/dataset.txt', sep='\t', header=None, names=['code', 'abstract', 'train_or_test'])
         data_df['code_num'] = data_df['code'].apply(class_tree.get_label)
         return data_df, class_tree
     
 
     def get_train_data(self):
         return self.X_train, self.y_train, len(self.word_index), self.embedding_matrix
+
+    def get_test_data(self):
+        return self.X_test, self.y_test
 
     def get_train_data_by_code(self, code):
         child_code = []
@@ -131,7 +135,7 @@ class NsfcHierDataLoader(BaseDataLoader):
 
         X_train_list = []
         y_list = []
-        for i in range(len(self.data_df)):
+        for i in range(len(self.X_train)):
             if self.data_df.iloc[i,]['code_num'] in child_code:
                 X_train_list.append(self.X_train[i])
                 if child.children != []:
@@ -142,6 +146,34 @@ class NsfcHierDataLoader(BaseDataLoader):
         X_train = np.asarray(X_train_list)
         y = to_categorical(np.asarray(y_list))
         data = [X_train, y]
+        return data
+
+    def get_test_data_by_code(self, code):
+        child_code = []
+        parent = self.class_tree.find(code)
+        children = parent.children
+
+
+        for child in children:
+            if child.children == []:
+                child_code.append(child.label)
+            else:
+                for c in child.children:
+                    child_code.append(c.label)
+
+        X_test_list = []
+        y_list = []
+        for i in range(33168, len(self.data_df)):
+            if self.data_df.iloc[i,]['code_num'] in child_code:
+                X_test_list.append(self.X_test[i-33168])
+                if child.children != []:
+                    l = ord(self.data_df.iloc[i,]['code'][0]) - ord('A')
+                else:
+                    l = int(self.data_df.iloc[i,]['code'][1:3]) - 1
+                y_list.append(l)
+        X_test = np.asarray(X_test_list)
+        y = to_categorical(np.asarray(y_list))
+        data = [X_test, y]
         return data
 
     def get_train_data_by_level(self, level):
@@ -167,8 +199,28 @@ class NsfcHierDataLoader(BaseDataLoader):
             X_train = np.concatenate(X_train, axis=0)
             return [X_train, y]
 
-    def get_test_data(self):
-        return self.X_test, self.y_test
+    def get_test_data_by_level(self, level):
+        if level == 0:
+            return self.get_test_data_by_code('ROOT')
+        else:
+            child_code = []
+            parent = self.class_tree.find('ROOT')
+            children = parent.children
+
+            y = np.zeros((len(self.X_test), 91), dtype='int32')
+            X_test = []
+
+            count = 0
+            ind = 0
+            for i, child in enumerate(children):
+                X_test_temp, y_temp = self.get_test_data_by_code(child.name)
+                X_test.append(X_test_temp)                
+                y[count:count+y_temp.shape[0], ind:ind+y_temp.shape[1]] = y_temp
+                count = count + y_temp.shape[0]
+                ind = ind + y_temp.shape[1]
+
+            X_test = np.concatenate(X_test, axis=0)
+            return [X_test, y]
 
     def get_class_tree(self):
         return self.class_tree

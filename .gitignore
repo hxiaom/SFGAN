@@ -2,3 +2,5 @@ data/label_hier copy.txt
 data/glove*
 experiments
 data/data_processor.py
+dataset_statistics
+models/weshclass_model.py
