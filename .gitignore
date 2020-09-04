@@ -4,3 +4,4 @@ experiments
 data/data_processor.py
 dataset_statistics
 models/weshclass_model.py
+models/svm.py

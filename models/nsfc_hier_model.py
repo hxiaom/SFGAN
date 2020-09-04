@@ -211,14 +211,15 @@ class NsfcHierModel(BaseModel):
     def compile(self, level, optimizer='adam', loss='categorical_crossentropy'):
         self.model[level].compile(optimizer=optimizer, loss=loss, metrics=['acc'])
 
-    def fit(self, data, level):
+    def fit(self, data, data_test, level):
         model = self.model[level]
         print('start fitting', datetime.datetime.now())
         model.fit(data[0], 
                 data[1], 
                 batch_size=self.config.global_trainer.batch_size, 
                 epochs=self.config.global_trainer.num_epochs,
-                validation_split=self.config.global_trainer.validation_split)
+                # validation_split=self.config.global_trainer.validation_split,
+                validation_data = (data_test[0], data_test[1]))
 
         show_memory()
         print('finish fitting', datetime.datetime.now())

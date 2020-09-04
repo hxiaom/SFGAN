@@ -1,4 +1,4 @@
-# version: 2020.09.03
+# version: 2020.09.04
 # TODO: training too slow. Maybe some variables are not in GPU memory or too large.
 
 from data_loader.nsfc_data_loader import NsfcHierDataLoader
@@ -81,14 +81,14 @@ def main():
         nsfc_hier_model.compile(level)
         print('load data')
         level_data = data_loader.get_train_data_by_level(level)
+        level_data_test = data_loader.get_test_data_by_level(level)
         print('fit', datetime.datetime.now())
-        y_pred = nsfc_hier_model.fit(data=level_data, level=level)
+        y_pred = nsfc_hier_model.fit(data=level_data, data_test=level_data_test, level=level)
         time_iter = datetime.datetime.now()
         print('finish iteration', datetime.datetime.now())
         show_memory()
 
     print('finish program', datetime.datetime.now())
-
 
 if __name__ == '__main__':
     main()
