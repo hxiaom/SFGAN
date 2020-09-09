@@ -1,4 +1,4 @@
-# version: 2020.09.04
+# version: 2020.09.09
 # TODO: training too slow. Maybe some variables are not in GPU memory or too large.
 
 from data_loader.nsfc_data_loader import NsfcHierDataLoader

@@ -100,40 +100,6 @@ class NsfcHierModel(BaseModel):
         model = Model(review_input, preds)
         return model
 
-    def HanModel(self, n_classes, word_index_length, embedding_matrix):
-        embedding_layer = Embedding(word_index_length + 1,
-                                    self.config.data_loader.EMBEDDING_DIM,
-                                    weights=[embedding_matrix],
-                                    input_length=self.config.data_loader.MAX_SENT_LENGTH,
-                                    trainable=False
-                                    # mask_zero=True  # mask will report ERROR: CUDNN_STATUS_BAD_PARAM
-                                    )
-
-        # embedding_layer = Masking(mask_value=0)(embedding_layer)
-        sentence_input = Input(shape=(self.config.data_loader.MAX_SENT_LENGTH,), dtype='int32')
-        embedded_sequences = embedding_layer(sentence_input)
-        l_lstm = Bidirectional(GRU(50, return_sequences=True))(embedded_sequences)
-        l_att = AttLayer(50)(l_lstm)
-        sentEncoder = Model(sentence_input, l_att)
-
-        review_input = Input(shape=(self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH), dtype='int32')
-        review_encoder = TimeDistributed(sentEncoder)(review_input)
-        l_lstm_sent = Bidirectional(GRU(50, return_sequences=True))(review_encoder)
-
-        func_classification_model = Model(self.func_model.input, self.func_model.layers[-2].output)
-        func_encoder = TimeDistributed(func_classification_model)(review_input)
-
-        query_value_attention_seq = Attention()([l_lstm_sent, func_encoder])
-        query_encoding = GlobalAveragePooling1D()(
-            func_encoder)
-        query_value_attention = GlobalAveragePooling1D()(
-            query_value_attention_seq)
-        l_att_sent = Concatenate()(
-            [query_encoding, query_value_attention])
-        preds = Dense(n_classes, activation='softmax')(l_att_sent)
-        model = Model(review_input, preds)
-        return model
-
     def FunctionalityModel(self, word_index_length, embedding_matrix):
         embedding_layer = Embedding(word_index_length + 1,
                                     self.config.data_loader.EMBEDDING_DIM,

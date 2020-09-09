@@ -5,3 +5,6 @@ data/data_processor.py
 dataset_statistics
 models/weshclass_model.py
 models/svm.py
+models/textcnn_model.py
+test.py
+configs/textcnn_config.json
