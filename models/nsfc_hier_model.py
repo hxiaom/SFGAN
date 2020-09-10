@@ -1,18 +1,20 @@
-from keras.engine.topology import Layer, InputSpec
 from base.base_model import BaseModel
+from utils.utils import show_memory
+
+from keras.engine.topology import Layer
 from keras.models import Sequential
 from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Flatten, Embedding, Lambda, Multiply, Concatenate, Masking
 from keras.layers import Conv1D, MaxPooling1D, Dropout, LSTM, GRU, Bidirectional, TimeDistributed, Attention, GlobalAveragePooling1D
 from keras import initializers
 from keras import backend as K
 from keras.models import Model
-from time import time
 
+from time import time
 import os
 import numpy as np
 import csv
 import datetime
-from utils.utils import show_memory
+
 
 class AttLayer(Layer):
     def __init__(self, attention_dim):

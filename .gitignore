@@ -8,3 +8,4 @@ models/svm.py
 models/textcnn_model.py
 test.py
 configs/textcnn_config.json
+notes.md

@@ -3,14 +3,36 @@
 
 from data_loader.nsfc_data_loader import NsfcHierDataLoader
 from data_loader.functionality_data_loader import FunctionalityDataLoader
+
 from models.nsfc_hier_model import NsfcHierModel
+
 from utils.utils import process_config, create_dirs, get_args, show_memory
-import gc
+from utils.utils import Logger
+
 from tensorflow.python.client import device_lib
 import tensorflow as tf
+
 import datetime
+import sys
+
 
 def main():
+    # capture the config and process the json configuration file
+    try:
+        args = get_args()
+        config = process_config(args.config)
+    except:
+        print("missing or invalid arguments")
+        exit(0)
+
+    # create the experiments dirs
+    create_dirs([config.callbacks.log_dir, config.callbacks.checkpoint_dir])
+
+    # set logs
+    sys.stdout = Logger(f'{config.callbacks.log_dir}/output.log', sys.stdout)
+    sys.stderr = Logger(f'{config.callbacks.log_dir}/error.log', sys.stderr)
+
+    # set GPU
     # if don't add this, it will report ERROR: Fail to find the dnn implementation.
     gpus = tf.config.experimental.list_physical_devices('GPU')
     if not gpus:
@@ -23,26 +45,16 @@ def main():
         print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
     except RuntimeError as e:
         print(e)
-
-    print(device_lib.list_local_devices())
-
-    # capture the config path from the run arguments    # then process the json configuration file
-    try:
-        args = get_args()
-        config = process_config(args.config)
-    except:
-        print("missing or invalid arguments")
-        exit(0)
-
-    # create the experiments dirs
-    create_dirs([config.callbacks.tensorboard_log_dir, config.callbacks.checkpoint_dir])
+    print(device_lib.list_local_devices(),'\n')
 
     # load data
-    print('load NSFC data')
+    print('Load NSFC data')
     data_loader = NsfcHierDataLoader(config)
     word_index_length, embedding_matrix = data_loader.get_embedding_matrix()
     class_tree = data_loader.get_class_tree()
     max_level = class_tree.get_height()
+
+    return
 
     print('load sentence functionality data')
     func_data_loader = FunctionalityDataLoader(config)
@@ -68,9 +80,7 @@ def main():
 
         # train global classifier
         print("\n### Phase 2: train global classifier ###")
-        gc.collect()
         global_classifier = nsfc_hier_model.ensemble_classifier(level, class_tree)
-        gc.collect()
         if global_classifier == None:
             print('Global classifier is None')
         else:
@@ -88,8 +98,5 @@ def main():
         print('finish iteration', datetime.datetime.now())
         show_memory()
 
-    print('finish program', datetime.datetime.now())
-
 if __name__ == '__main__':
     main()
-    print('finish!!!', datetime.datetime.now())

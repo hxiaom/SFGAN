@@ -3,6 +3,7 @@ from dotmap import DotMap
 import os
 import time
 import argparse
+import sys
 
 # conda list -e > requirements.txt  # output environment list
 
@@ -25,7 +26,7 @@ def get_config_from_json(json_file):
 def process_config(json_file):
     config, _ = get_config_from_json(json_file)
     print(config)
-    config.callbacks.tensorboard_log_dir = os.path.join("experiments", time.strftime("%Y-%m-%d/",time.localtime()), config.exp.name, "logs/")
+    config.callbacks.log_dir = os.path.join("experiments", time.strftime("%Y-%m-%d/",time.localtime()), config.exp.name, "logs/")
     config.callbacks.checkpoint_dir = os.path.join("experiments", time.strftime("%Y-%m-%d/",time.localtime()), config.exp.name, "checkpoints/")
     return config
 
@@ -62,3 +63,15 @@ def show_memory():
     for i in list(globals().keys()):
         memory = getsizeof(i)
         print(i, memory)
+
+class Logger(object):
+    def __init__(self, filename='default.log', stream=sys.stdout):
+	    self.terminal = stream
+	    self.log = open(filename, 'a')
+
+    def write(self, message):
+	    self.terminal.write(message)
+	    self.log.write(message)
+
+    def flush(self):
+	    pass

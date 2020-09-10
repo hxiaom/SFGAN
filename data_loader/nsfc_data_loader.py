@@ -15,8 +15,8 @@ class NsfcHierDataLoader(BaseDataLoader):
         super(NsfcHierDataLoader, self).__init__(config)
         self.data_df, self.class_tree = self.read_file()
 
-        abstracts = self.data_df.iloc[:, 1].to_numpy()
-        tags = self.data_df.iloc[:, 3].to_numpy()
+        abstracts = self.data_df['abstract'].to_numpy()
+        tags = self.data_df['tags'].to_numpy()
 
         reviews = []
         labels = []
@@ -106,11 +106,12 @@ class NsfcHierDataLoader(BaseDataLoader):
                 offset += 1
 
         n_classes = class_tree.get_size() - 1
-        print(f'Total number of classes: {n_classes}')
+        print(f'Total number of classes: {n_classes}\n')
+        print('Class tree visulization: ')
         print(class_tree.visualize_tree())
         
         data_df = pd.read_csv('./data/dataset.txt', sep='\t', header=None, names=['code', 'abstract', 'train_or_test'])
-        data_df['code_num'] = data_df['code'].apply(class_tree.get_label)
+        data_df['tags'] = data_df['code'].apply(class_tree.get_label)
         return data_df, class_tree
     
 
