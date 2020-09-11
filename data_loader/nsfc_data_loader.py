@@ -18,7 +18,7 @@ class NsfcHierDataLoader(BaseDataLoader):
         abstracts = self.data_df['abstract'].to_numpy()
         tags = self.data_df['tags'].to_numpy()
 
-        reviews = []
+        proposals = []
         labels = []
         texts = []
 
@@ -26,7 +26,7 @@ class NsfcHierDataLoader(BaseDataLoader):
             text = abstracts[idx]
             texts.append(text)
             sentences = tokenize.sent_tokenize(text)
-            reviews.append(sentences)
+            proposals.append(sentences)
             labels.append(tags[idx])
 
         tokenizer = Tokenizer(num_words=self.config.data_loader.MAX_NB_WORDS)
@@ -35,7 +35,7 @@ class NsfcHierDataLoader(BaseDataLoader):
 
         data = np.zeros((len(texts), self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH), dtype='int32')
 
-        for i, sentences in enumerate(reviews):
+        for i, sentences in enumerate(proposals):
             for j, sent in enumerate(sentences):
                 if j < self.config.data_loader.MAX_SENTS:
                     wordTokens = text_to_word_sequence(sent)
@@ -53,18 +53,16 @@ class NsfcHierDataLoader(BaseDataLoader):
 
         labels = to_categorical(np.asarray(labels))
         # labels = np.asarray(labels)
-        print('Shape of data tensor:', data.shape)
-        print('Shape of label tensor:', labels.shape)
+        print('Shape of X tensor:', data.shape)
+        print('Shape of y tensor:', labels.shape)
 
         self.X_train = data[:33168,:,:]
-        print(self.X_train.shape)
         self.y_train = labels[:33168,:]
         self.X_test = data[33168:,:,:]
         self.y_test = labels[33168:,:]
 
-        GLOVE_DIR = "./data"
         embeddings_index = {}
-        f = open(os.path.join(GLOVE_DIR, 'glove.6B.100d.txt'))
+        f = open('./data/glove.6B.100d.txt')
         for line in f:
             values = line.split()
             word = values[0]
@@ -74,12 +72,10 @@ class NsfcHierDataLoader(BaseDataLoader):
 
         print('Total %s word vectors.' % len(embeddings_index))
 
-        # building Hierachical Attention network
         self.embedding_matrix = np.random.random((len(self.word_index) + 1, self.config.data_loader.EMBEDDING_DIM))
         for word, i in self.word_index.items():
             embedding_vector = embeddings_index.get(word)
             if embedding_vector is not None:
-                # words not found in embedding index will be all-zeros.
                 self.embedding_matrix[i] = embedding_vector
 
     def read_file(self):
@@ -137,7 +133,7 @@ class NsfcHierDataLoader(BaseDataLoader):
         X_train_list = []
         y_list = []
         for i in range(len(self.X_train)):
-            if self.data_df.iloc[i,]['code_num'] in child_code:
+            if self.data_df.iloc[i,]['tags'] in child_code:
                 X_train_list.append(self.X_train[i])
                 if child.children != []:
                     l = ord(self.data_df.iloc[i,]['code'][0]) - ord('A')
@@ -165,7 +161,7 @@ class NsfcHierDataLoader(BaseDataLoader):
         X_test_list = []
         y_list = []
         for i in range(33168, len(self.data_df)):
-            if self.data_df.iloc[i,]['code_num'] in child_code:
+            if self.data_df.iloc[i,]['tags'] in child_code:
                 X_test_list.append(self.X_test[i-33168])
                 if child.children != []:
                     l = ord(self.data_df.iloc[i,]['code'][0]) - ord('A')

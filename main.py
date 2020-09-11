@@ -54,8 +54,6 @@ def main():
     class_tree = data_loader.get_class_tree()
     max_level = class_tree.get_height()
 
-    return
-
     print('load sentence functionality data')
     func_data_loader = FunctionalityDataLoader(config)
     X_func, y_func, word_length_func, embedding_matrix_func = func_data_loader.get_train_data()

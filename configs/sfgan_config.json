@@ -6,7 +6,7 @@
     "name": "nsfc_data_loader.NsfcDataLoader",
     "MAX_SENT_LENGTH": 30,
     "MAX_SENTS": 10,
-    "MAX_NB_WORDS": 10000,
+    "MAX_NB_WORDS": 100000,
     "EMBEDDING_DIM": 100
   },
   "model":{

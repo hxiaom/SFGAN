@@ -21,7 +21,7 @@ class FunctionalityDataLoader(BaseDataLoader):
         reviews = []
         classes = []
         labels = []
-        with open('./data/functionality/train.jsonl') as f:
+        with open('./data/functionality/train_pubmed.jsonl') as f:
             for line in f:
                 json_dict = json.loads(line)
                 sentences_list = json_dict['sentences']
@@ -64,9 +64,8 @@ class FunctionalityDataLoader(BaseDataLoader):
         self.X_test = data
         self.y_test = labels
 
-        GLOVE_DIR = "./data"
         embeddings_index = {}
-        f = open(os.path.join(GLOVE_DIR, 'glove.6B.100d.txt'))
+        f = open('./data/glove.6B.100d.txt')
         for line in f:
             values = line.split()
             word = values[0]
