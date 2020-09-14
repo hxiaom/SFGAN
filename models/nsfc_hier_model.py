@@ -1,6 +1,6 @@
 from base.base_model import BaseModel
-from utils.utils import show_memory
 
+import tensorflow as tf
 from keras.engine.topology import Layer
 from keras.models import Sequential
 from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Flatten, Embedding, Lambda, Multiply, Concatenate, Masking
@@ -102,6 +102,30 @@ class NsfcHierModel(BaseModel):
         model = Model(review_input, preds)
         return model
 
+    def SfganModel_without_functionality(self, n_classes, word_index_length, embedding_matrix):
+        embedding_layer = Embedding(word_index_length + 1,
+                                    self.config.data_loader.EMBEDDING_DIM,
+                                    weights=[embedding_matrix],
+                                    input_length=self.config.data_loader.MAX_SENT_LENGTH,
+                                    trainable=False
+                                    # mask_zero=True  # mask will report ERROR: CUDNN_STATUS_BAD_PARAM
+                                    )
+
+        sentence_input = Input(shape=(self.config.data_loader.MAX_SENT_LENGTH,), dtype='int32')
+        embedded_sequences = embedding_layer(sentence_input)
+        l_lstm = Bidirectional(GRU(25, return_sequences=True))(embedded_sequences)
+        l_att = AttLayer(25)(l_lstm)
+        sentEncoder = Model(sentence_input, l_att)
+
+        review_input = Input(shape=(self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH), dtype='int32')
+        review_encoder = TimeDistributed(sentEncoder)(review_input)
+        l_lstm_sent = Bidirectional(GRU(25, return_sequences=True))(review_encoder)
+        l_att_sent = AttLayer(25)(l_lstm_sent)
+        preds = Dense(n_classes, activation='softmax')(l_att_sent)
+        model = Model(review_input, preds)
+
+        return model
+
     def FunctionalityModel(self, word_index_length, embedding_matrix):
         embedding_layer = Embedding(word_index_length + 1,
                                     self.config.data_loader.EMBEDDING_DIM,
@@ -124,7 +148,7 @@ class NsfcHierModel(BaseModel):
         self.func_model = self.FunctionalityModel(length, matrix)
         self.func_model.compile(loss='categorical_crossentropy',
                 optimizer='adam',
-                metrics=['acc'])
+                metrics=['acc', tf.keras.metrics.Recall(), tf.keras.metrics.Precision()])
         self.func_model.fit(X, y,
                             batch_size=self.config.func_trainer.batch_size,
                             # batch_size=1, 
@@ -133,6 +157,15 @@ class NsfcHierModel(BaseModel):
                             )
         for k,v in self.func_model._get_trainable_state().items():
             k.trainable = False
+        self.func_model.save_weights(f'{self.config.callbacks.checkpoint_dir}/functionality.h5')
+        return
+        
+    def load_func_model(self, length, matrix):
+        self.func_model = self.FunctionalityModel(length, matrix)
+        self.func_model.compile(loss='categorical_crossentropy',
+                optimizer='adam',
+                metrics=['acc', tf.keras.metrics.Recall(), tf.keras.metrics.Precision()])
+        self.func_model.load_weights(f'{self.config.callbacks.checkpoint_dir}/functionality.h5')
         return
 
     def instantiate(self, class_tree, word_index_length, embedding_matrix):
@@ -142,11 +175,12 @@ class NsfcHierModel(BaseModel):
             class_tree.model = None
         else:
             class_tree.model = self.SfganModel(num_children, word_index_length, embedding_matrix)
+            # class_tree.model = self.SfganModel_without_functionality(num_children, word_index_length, embedding_matrix)
 
     def pretrain(self, data, data_test, model):
         model.compile(loss='categorical_crossentropy',
               optimizer='adam',
-              metrics=['acc'])
+              metrics=['acc', tf.keras.metrics.Recall(), tf.keras.metrics.Precision()])
         t0 = time()
         print('\nPretraining...')
         model.fit(data[0], 
@@ -165,9 +199,10 @@ class NsfcHierModel(BaseModel):
         elif level == 1:
             children = class_tree.children
             outputs = []
+            top_level_model = class_tree.model(self.x)
             for i, child in enumerate(children):
                 print('ensemble node', child.name)
-                a = IndexLayer(i)(class_tree.model(self.x))
+                a = IndexLayer(i)(top_level_model)
                 b = child.model(self.x)
                 c = Multiply()([a, b])
                 outputs.append(c)
@@ -177,7 +212,7 @@ class NsfcHierModel(BaseModel):
         return result_classifier
 
     def compile(self, level, optimizer='adam', loss='categorical_crossentropy'):
-        self.model[level].compile(optimizer=optimizer, loss=loss, metrics=['acc'])
+        self.model[level].compile(optimizer=optimizer, loss=loss, metrics=['acc', tf.keras.metrics.Recall(), tf.keras.metrics.Precision()])
 
     def fit(self, data, data_test, level):
         model = self.model[level]
@@ -189,11 +224,9 @@ class NsfcHierModel(BaseModel):
                 # validation_split=self.config.global_trainer.validation_split,
                 validation_data = (data_test[0], data_test[1]))
 
-        show_memory()
         print('finish fitting', datetime.datetime.now())
         model.save_weights(f'{self.config.callbacks.checkpoint_dir}/{level}.h5')
         print('finish save model', datetime.datetime.now())
-        show_memory()
         return
 
 def IndexLayer(idx):

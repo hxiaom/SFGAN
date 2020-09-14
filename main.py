@@ -1,12 +1,11 @@
-# version: 2020.09.09
-# TODO: training too slow. Maybe some variables are not in GPU memory or too large.
+# version: 2020.09.14
 
 from data_loader.nsfc_data_loader import NsfcHierDataLoader
 from data_loader.functionality_data_loader import FunctionalityDataLoader
 
 from models.nsfc_hier_model import NsfcHierModel
 
-from utils.utils import process_config, create_dirs, get_args, show_memory
+from utils.utils import process_config, create_dirs, get_args
 from utils.utils import Logger
 
 from tensorflow.python.client import device_lib
@@ -61,6 +60,7 @@ def main():
     # train functionality model
     nsfc_hier_model = NsfcHierModel(config)
     nsfc_hier_model.train_func_classification_model(X_func, y_func, word_length_func, embedding_matrix_func)
+    # nsfc_hier_model.load_func_model(word_length_func, embedding_matrix_func)
 
     # train each level
     for level in range(max_level):
@@ -94,7 +94,6 @@ def main():
         y_pred = nsfc_hier_model.fit(data=level_data, data_test=level_data_test, level=level)
         time_iter = datetime.datetime.now()
         print('finish iteration', datetime.datetime.now())
-        show_memory()
 
 if __name__ == '__main__':
     main()
