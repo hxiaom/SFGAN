@@ -85,13 +85,13 @@ class NsfcHierModel(BaseModel):
         # sentEncoder = Model(sentence_input, d)
 
         review_input = Input(shape=(self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH), dtype='int32')
-        review_encoder = TimeDistributed(sentEncoder)(review_input)
-        l_lstm_sent = Bidirectional(GRU(25, return_sequences=True))(review_encoder)
+        review_encoder = TimeDistributed(sentEncoder)(review_input)  # Value
+        l_lstm_sent = Bidirectional(GRU(25, return_sequences=True))(review_encoder) # Query
 
         func_classification_model = Model(self.func_model.input, self.func_model.layers[-2].output)
-        func_encoder = TimeDistributed(func_classification_model)(review_input)
+        func_encoder = TimeDistributed(func_classification_model)(review_input) # Key
 
-        query_value_attention_seq = Attention()([l_lstm_sent, func_encoder])
+        query_value_attention_seq = Attention()([l_lstm_sent, review_encoder, func_encoder])
         query_encoding = GlobalAveragePooling1D()(
             func_encoder)
         query_value_attention = GlobalAveragePooling1D()(
