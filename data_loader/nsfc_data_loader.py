@@ -1,7 +1,7 @@
 from base.base_data_loader import BaseDataLoader
 from utils.tree import ClassNode
 
-from nltk import tokenize
+from nltk.tokenize import sent_tokenize
 from keras.preprocessing.text import Tokenizer, text_to_word_sequence
 from keras.preprocessing.sequence import pad_sequences
 from keras.utils.np_utils import to_categorical
@@ -25,7 +25,7 @@ class NsfcHierDataLoader(BaseDataLoader):
         for idx in range(abstracts.shape[0]):
             text = abstracts[idx]
             texts.append(text)
-            sentences = tokenize.sent_tokenize(text)
+            sentences = sent_tokenize(text)
             proposals.append(sentences)
             labels.append(tags[idx])
 
