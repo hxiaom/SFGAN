@@ -1,9 +1,21 @@
-# version: 2020.09.14
+# version: 2020.12.20
+from comet_ml import Experiment
+experiment = Experiment(
+    project_name="proposalclassification",
+    workspace="hxiaom",
+    auto_metric_logging=True,
+    auto_param_logging=True,
+    auto_histogram_weight_logging=True,
+    auto_histogram_gradient_logging=True,
+    auto_histogram_activation_logging=True,
+)
 
-from data_loader.nsfc_data_loader import NsfcHierDataLoader
+from data_loader.nsfc_hier_data_loader import NsfcHierDataLoader
+from data_loader.nsfc_data_loader import NsfcDataLoader
 from data_loader.functionality_data_loader import FunctionalityDataLoader
 
 from models.nsfc_hier_model import NsfcHierModel
+from models.nsfc_model import NsfcModel
 
 from utils.utils import process_config, create_dirs, get_args
 from utils.utils import Logger
@@ -13,6 +25,9 @@ import tensorflow as tf
 
 import datetime
 import sys
+import numpy as np
+
+
 
 
 def main():
@@ -46,54 +61,38 @@ def main():
         print(e)
     print(device_lib.list_local_devices(),'\n')
 
-    # load data
+    # load NSFC data
     print('Load NSFC data')
-    data_loader = NsfcHierDataLoader(config)
-    word_index_length, embedding_matrix = data_loader.get_embedding_matrix()
-    class_tree = data_loader.get_class_tree()
-    max_level = class_tree.get_height()
+    data_loader = NsfcDataLoader(config)
+    X_train, y_train, X_test, y_test, word_length, embedding_matrix = data_loader.get_train_data()
 
-    print('load sentence functionality data')
-    func_data_loader = FunctionalityDataLoader(config)
-    X_func, y_func, word_length_func, embedding_matrix_func = func_data_loader.get_train_data()
+    # # load functionality data
+    # print('load sentence functionality data')
+    # func_data_loader = FunctionalityDataLoader(config)
+    # X_func, y_func, word_length_func, embedding_matrix_func = func_data_loader.get_train_data()
+    # print(word_length_func)
+    # print(embedding_matrix_func)
+    # print(type(embedding_matrix_func))
+    # print(embedding_matrix_func.shape)
+    word_length_func = 136411
 
+    embedding_matrix_func = np.loadtxt('./experiments/embedding_matrix_func.txt')
+    print(embedding_matrix_func)
+    print(type(embedding_matrix_func))
+    print(embedding_matrix_func.shape)
     # train functionality model
-    nsfc_hier_model = NsfcHierModel(config)
-    nsfc_hier_model.train_func_classification_model(X_func, y_func, word_length_func, embedding_matrix_func)
-    # nsfc_hier_model.load_func_model(word_length_func, embedding_matrix_func)
+    nsfc_model = NsfcModel(config)
+    # nsfc_model.train_func_classification_model(X_func, y_func, word_length_func, embedding_matrix_func)
+    func_model = nsfc_model.load_func_model(word_length_func, embedding_matrix_func)
 
-    # train each level
-    for level in range(max_level):
+    print(X_train)
+    print('------------------------------')
+    print(y_train)
+    model = nsfc_model.SfganModel(45, word_length, embedding_matrix, func_model)
+    # print(model.summary())
+    # model = nsfc_model.SfganModel_without_functionality(45, word_length, embedding_matrix)
+    nsfc_model.pretrain(data=[X_train, y_train], data_test=[X_test, y_test], model=model)
 
-        # train local classifier
-        print("\n### Phase 1: train local classifier ###")
-        parents = class_tree.find_at_level(level)
-        for parent in parents:
-            nsfc_hier_model.instantiate(class_tree=parent, word_index_length=word_index_length, embedding_matrix=embedding_matrix)
-            if parent.model is not None:
-                print(parent.model)
-                data = data_loader.get_train_data_by_code(parent.name)
-                data_test = data_loader.get_test_data_by_code(parent.name)
-                nsfc_hier_model.pretrain(data=data, data_test=data_test, model=parent.model)
-
-        # train global classifier
-        print("\n### Phase 2: train global classifier ###")
-        global_classifier = nsfc_hier_model.ensemble_classifier(level, class_tree)
-        if global_classifier == None:
-            print('Global classifier is None')
-        else:
-            print(global_classifier.summary())
-
-        nsfc_hier_model.model.append(global_classifier)
-        print('compile')
-        nsfc_hier_model.compile(level)
-        print('load data')
-        level_data = data_loader.get_train_data_by_level(level)
-        level_data_test = data_loader.get_test_data_by_level(level)
-        print('fit', datetime.datetime.now())
-        y_pred = nsfc_hier_model.fit(data=level_data, data_test=level_data_test, level=level)
-        time_iter = datetime.datetime.now()
-        print('finish iteration', datetime.datetime.now())
 
 if __name__ == '__main__':
     main()

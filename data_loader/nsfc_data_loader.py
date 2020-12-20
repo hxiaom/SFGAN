@@ -10,39 +10,52 @@ import pandas as pd
 import numpy as np
 import os
 
-class NsfcHierDataLoader(BaseDataLoader):
+class NsfcDataLoader(BaseDataLoader):
     def __init__(self, config):
-        super(NsfcHierDataLoader, self).__init__(config)
-        self.data_df, self.class_tree = self.read_file()
+        super(NsfcDataLoader, self).__init__(config)
 
-        abstracts = self.data_df['abstract'].to_numpy()
-        tags = self.data_df['tags'].to_numpy()
+    def get_train_data(self):
+        data_df = pd.read_csv('./data/dataset_level2.txt', 
+                                sep='\t', 
+                                header=None, 
+                                names=['code', 'abstract', 'train_or_test'])
+        code_to_index = {'A0101':0, 'A0102':1, 'A0103':2, 'A0104':3, 'A0105':4,
+                        'A0106':5, 'A0107':6, 'A0108':7, 'A0109':8, 'A0110':9,
+                        'A0111':10, 'A0112':11, 'A0113':12, 'A0114':13, 'A0115':14,
+                        'A0116':15, 'A0117':16, 'A0201':17, 'A0202':18, 'A0203':19,
+                        'A0204':20, 'A0205':21, 'A0206':22, 'A0301':23, 'A0302':24,
+                        'A0303':25, 'A0304':26, 'A0305':27, 'A0306':28, 'A0307':29,
+                        'A0308':30, 'A0309':31, 'A0310':32, 'A0401':33, 'A0402':34,
+                        'A0403':35, 'A0404':36, 'A0405':37, 'A0501':38, 'A0502':39,
+                        'A0503':40, 'A0504':41, 'A0505':42, 'A0506':43, 'A0507':44}
+        abstract_num = len(data_df)
 
-        proposals = []
-        labels = []
-        texts = []
+        abstracts = data_df['abstract'].tolist()
 
-        for idx in range(abstracts.shape[0]):
-            text = abstracts[idx]
-            texts.append(text)
-            sentences = sent_tokenize(text)
-            proposals.append(sentences)
-            labels.append(tags[idx])
+        abstract_sents = []
+        code_index = []
+        
+        for i in range(abstract_num):
+            print(len(sent_tokenize(data_df['abstract'][i])))
+            abstract_sents.append(sent_tokenize(data_df['abstract'][i]))
+            code_index.append(code_to_index[data_df['code'][i]])
 
         tokenizer = Tokenizer(num_words=self.config.data_loader.MAX_NB_WORDS)
-        tokenizer.fit_on_texts(texts)
-        # sequences = tokenizer.texts_to_sequences(texts)
+        tokenizer.fit_on_texts(abstracts)
+        # sequences = tokenizer.texts_to_sequences(abstracts)
 
-        data = np.zeros((len(texts), self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH), dtype='int32')
 
-        for i, sentences in enumerate(proposals):
-            for j, sent in enumerate(sentences):
+        data = np.zeros((abstract_num, self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH), dtype='int32')
+        for i, abstract in enumerate(abstract_sents):
+            for j, sent in enumerate(abstract):
                 if j < self.config.data_loader.MAX_SENTS:
-                    wordTokens = text_to_word_sequence(sent)
+                    word_tokens = text_to_word_sequence(sent)
                     k = 0
-                    for _, word in enumerate(wordTokens):
-                        if word in tokenizer.word_index:
-                            if k < self.config.data_loader.MAX_SENT_LENGTH and tokenizer.word_index[word] < self.config.data_loader.MAX_NB_WORDS:
+                    for _, word in enumerate(word_tokens):
+                        if ((word in tokenizer.word_index) 
+                                and (k < self.config.data_loader.MAX_SENT_LENGTH) 
+                                and (tokenizer.word_index[word] < self.config.data_loader.MAX_NB_WORDS)):
+
                                 data[i, j, k] = tokenizer.word_index[word]
                                 k = k + 1
 
@@ -51,15 +64,15 @@ class NsfcHierDataLoader(BaseDataLoader):
 
         # data = pad_sequences(sequences, maxlen=self.config.data_loader.MAX_SENTS)
 
-        labels = to_categorical(np.asarray(labels))
+        code_index = to_categorical(np.asarray(code_index))
         # labels = np.asarray(labels)
         print('Shape of X tensor:', data.shape)
-        print('Shape of y tensor:', labels.shape)
+        print('Shape of y tensor:', code_index.shape)
 
-        self.X_train = data[:33168,:,:]
-        self.y_train = labels[:33168,:]
-        self.X_test = data[33168:,:,:]
-        self.y_test = labels[33168:,:]
+        self.X_train = data[:2984,:]
+        self.y_train = code_index[:2984,:]
+        self.X_test = data[2984:,:]
+        self.y_test = code_index[2984:,:]
 
         embeddings_index = {}
         f = open('./data/glove.6B.100d.txt')
@@ -77,42 +90,7 @@ class NsfcHierDataLoader(BaseDataLoader):
             embedding_vector = embeddings_index.get(word)
             if embedding_vector is not None:
                 self.embedding_matrix[i] = embedding_vector
-
-    def read_file(self):
-        class_tree = ClassNode("ROOT",None,-1)
-        hier_file = open(f"./data/label_hier.txt", 'r')
-        contents = hier_file.readlines()
-        cnt = 0
-        for line in contents:
-            line = line.split("\n")[0]
-            line = line.split("\t")
-            parent = line[0]
-            children = line[1:]
-            for child in children:
-                parent_node = class_tree.find(parent)
-                class_tree.find_add_child(parent, ClassNode(child, parent_node))
-                cnt += 1
-        
-        # assign labels to classes in class tree
-        offset = 0
-        for i in range(1, class_tree.get_height()+1):
-            nodes = class_tree.find_at_level(i)
-            for node in nodes:
-                node.label = offset
-                offset += 1
-
-        n_classes = class_tree.get_size() - 1
-        print(f'Total number of classes: {n_classes}\n')
-        print('Class tree visulization: ')
-        print(class_tree.visualize_tree())
-        
-        data_df = pd.read_csv('./data/dataset.txt', sep='\t', header=None, names=['code', 'abstract', 'train_or_test'])
-        data_df['tags'] = data_df['code'].apply(class_tree.get_label)
-        return data_df, class_tree
-    
-
-    def get_train_data(self):
-        return self.X_train, self.y_train, len(self.word_index), self.embedding_matrix
+        return self.X_train, self.y_train, self.X_test, self.y_test, len(self.word_index), self.embedding_matrix
 
     def get_test_data(self):
         return self.X_test, self.y_test
@@ -219,8 +197,6 @@ class NsfcHierDataLoader(BaseDataLoader):
             X_test = np.concatenate(X_test, axis=0)
             return [X_test, y]
 
-    def get_class_tree(self):
-        return self.class_tree
 
     def get_embedding_matrix(self):
         return len(self.word_index), self.embedding_matrix
