@@ -9,6 +9,7 @@ experiment = Experiment(
     auto_histogram_gradient_logging=True,
     auto_histogram_activation_logging=True,
 )
+experiment.add_tag('funcatt')
 
 from data_loader.nsfc_data_loader import NsfcDataLoader
 from data_loader.functionality_data_loader import FunctionalityDataLoader
@@ -98,8 +99,6 @@ def main():
     # train model
     funcatt_trainer = FuncAttModelTrainer(funcatt_model.model, [X_train, y_train], [X_test, y_test], config)
     funcatt_trainer.train()
-    # model = nsfc_model.SfganModel_without_functionality(45, word_length, embedding_matrix)
-    # nsfc_model.pretrain(data=[X_train, y_train], data_test=[X_test, y_test], model=model)
 
 
 if __name__ == '__main__':

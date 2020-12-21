@@ -9,6 +9,7 @@ experiment = Experiment(
     auto_histogram_gradient_logging=True,
     auto_histogram_activation_logging=True,
 )
+experiment.add_tag('textcnn')
 
 from data_loader.nsfc_data_loader import NsfcDataLoader
 

@@ -28,7 +28,7 @@ class FuncModel(BaseModel):
         self.model = Model(sentence_input, preds)
         self.model.compile(loss='categorical_crossentropy',
                 optimizer='adam',
-                metrics=['acc', tf.keras.metrics.Recall(), tf.keras.metrics.Precision()])
+                metrics=['acc', tf.keras.metrics.Recall(name='recall'), tf.keras.metrics.Precision(name='precision')])
 
     def load_model(self):
         self.model.load_weights('./experiments/functionality.h5')

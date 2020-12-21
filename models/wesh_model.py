@@ -88,4 +88,4 @@ class WeShModel(BaseModel):
         
         self.model.compile(loss='categorical_crossentropy',
               optimizer='adam',
-              metrics=['acc', tf.keras.metrics.Recall(), tf.keras.metrics.Precision()])
+              metrics=['acc', tf.keras.metrics.Recall(name='recall'), tf.keras.metrics.Precision(name='precision')])
