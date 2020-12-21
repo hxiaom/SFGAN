@@ -1,0 +1,26 @@
+{
+	"folders": [
+		{
+			"path": "/home/hxiaom/workstation/SFGAN"
+		}
+	],
+	"settings": {
+		"python.pythonPath": "/home/hxiaom/.conda/envs/sfgan/bin/python"
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "Python: Current File",
+				"type": "python",
+				"request": "launch",
+				"program": "${file}",
+				"console": "integratedTerminal",
+				"args": [
+					"-c",
+					"./configs/wesh_config.json"
+				]
+			}
+		]
+	}
+}

@@ -36,7 +36,7 @@ class NsfcDataLoader(BaseDataLoader):
         code_index = []
         
         for i in range(abstract_num):
-            print(len(sent_tokenize(data_df['abstract'][i])))
+            # print(len(sent_tokenize(data_df['abstract'][i])))
             abstract_sents.append(sent_tokenize(data_df['abstract'][i]))
             code_index.append(code_to_index[data_df['code'][i]])
 
@@ -73,6 +73,11 @@ class NsfcDataLoader(BaseDataLoader):
         self.y_train = code_index[:2984,:]
         self.X_test = data[2984:,:]
         self.y_test = code_index[2984:,:]
+
+        print('Shape of X_train tensor:', self.X_train.shape)
+        print('Shape of y_train tensor:', self.y_train.shape)
+        print('Shape of X_test tensor:', self.X_test.shape)
+        print('Shape of y_test tensor:', self.y_test.shape)
 
         embeddings_index = {}
         f = open('./data/glove.6B.100d.txt')

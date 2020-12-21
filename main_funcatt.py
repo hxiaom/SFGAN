@@ -10,12 +10,13 @@ experiment = Experiment(
     auto_histogram_activation_logging=True,
 )
 
-from data_loader.nsfc_hier_data_loader import NsfcHierDataLoader
 from data_loader.nsfc_data_loader import NsfcDataLoader
 from data_loader.functionality_data_loader import FunctionalityDataLoader
 
-from models.nsfc_hier_model import NsfcHierModel
-from models.nsfc_model import NsfcModel
+from models.func_model import FuncModel
+from models.funcatt_model import FuncAttModel
+
+from trainers.funcatt_trainer import FuncAttModelTrainer
 
 from utils.utils import process_config, create_dirs, get_args
 from utils.utils import Logger
@@ -26,8 +27,6 @@ import tensorflow as tf
 import datetime
 import sys
 import numpy as np
-
-
 
 
 def main():
@@ -61,12 +60,16 @@ def main():
         print(e)
     print(device_lib.list_local_devices(),'\n')
 
+
     # load NSFC data
     print('Load NSFC data')
     data_loader = NsfcDataLoader(config)
     X_train, y_train, X_test, y_test, word_length, embedding_matrix = data_loader.get_train_data()
+    print("X_train\n", X_train)
+    print("y_train\n", y_train)
+    
 
-    # # load functionality data
+    # load functionality data
     # print('load sentence functionality data')
     # func_data_loader = FunctionalityDataLoader(config)
     # X_func, y_func, word_length_func, embedding_matrix_func = func_data_loader.get_train_data()
@@ -74,24 +77,29 @@ def main():
     # print(embedding_matrix_func)
     # print(type(embedding_matrix_func))
     # print(embedding_matrix_func.shape)
+    
+
+    # load functionality model
     word_length_func = 136411
-
     embedding_matrix_func = np.loadtxt('./experiments/embedding_matrix_func.txt')
-    print(embedding_matrix_func)
-    print(type(embedding_matrix_func))
-    print(embedding_matrix_func.shape)
-    # train functionality model
-    nsfc_model = NsfcModel(config)
-    # nsfc_model.train_func_classification_model(X_func, y_func, word_length_func, embedding_matrix_func)
-    func_model = nsfc_model.load_func_model(word_length_func, embedding_matrix_func)
+    func_model = FuncModel(word_length_func, embedding_matrix_func, config)
+    func_model.load_model()
 
-    print(X_train)
-    print('------------------------------')
-    print(y_train)
-    model = nsfc_model.SfganModel(45, word_length, embedding_matrix, func_model)
-    # print(model.summary())
+    # # create functionality model
+    # func_model = FuncModel(config, word_length_func, embedding_matrix_func)
+    
+    # # train functionality model
+    # func_trainer = FuncModelTrainer(func_model.model, [X_func, y_func], config)
+
+    # create model
+    funcatt_model = FuncAttModel(word_length, embedding_matrix, func_model.model, config)
+    print(funcatt_model.model.summary())
+
+    # train model
+    funcatt_trainer = FuncAttModelTrainer(funcatt_model.model, [X_train, y_train], [X_test, y_test], config)
+    funcatt_trainer.train()
     # model = nsfc_model.SfganModel_without_functionality(45, word_length, embedding_matrix)
-    nsfc_model.pretrain(data=[X_train, y_train], data_test=[X_test, y_test], model=model)
+    # nsfc_model.pretrain(data=[X_train, y_train], data_test=[X_test, y_test], model=model)
 
 
 if __name__ == '__main__':
