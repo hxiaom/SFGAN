@@ -2,6 +2,7 @@ from base.base_data_loader import BaseDataLoader
 from utils.tree import ClassNode
 
 from nltk.tokenize import sent_tokenize
+from sklearn.feature_extraction.text import TfidfVectorizer
 from keras.preprocessing.text import Tokenizer, text_to_word_sequence
 from keras.preprocessing.sequence import pad_sequences
 from keras.utils.np_utils import to_categorical
@@ -177,112 +178,60 @@ class NsfcDataLoader(BaseDataLoader):
                 self.embedding_matrix[i] = embedding_vector
         return self.X_train, self.y_train, self.X_test, self.y_test, len(self.word_index), self.embedding_matrix
 
-    def get_test_data(self):
-        return self.X_test, self.y_test
+    def get_train_data_tfidf(self):
+        data_df = pd.read_csv('./data/dataset_level2.txt', 
+                                sep='\t', 
+                                header=None, 
+                                names=['code', 'abstract', 'train_or_test'])
+        code_to_index = {'A0101':0, 'A0102':1, 'A0103':2, 'A0104':3, 'A0105':4,
+                        'A0106':5, 'A0107':6, 'A0108':7, 'A0109':8, 'A0110':9,
+                        'A0111':10, 'A0112':11, 'A0113':12, 'A0114':13, 'A0115':14,
+                        'A0116':15, 'A0117':16, 'A0201':17, 'A0202':18, 'A0203':19,
+                        'A0204':20, 'A0205':21, 'A0206':22, 'A0301':23, 'A0302':24,
+                        'A0303':25, 'A0304':26, 'A0305':27, 'A0306':28, 'A0307':29,
+                        'A0308':30, 'A0309':31, 'A0310':32, 'A0401':33, 'A0402':34,
+                        'A0403':35, 'A0404':36, 'A0405':37, 'A0501':38, 'A0502':39,
+                        'A0503':40, 'A0504':41, 'A0505':42, 'A0506':43, 'A0507':44}
+        abstract_num = len(data_df)
 
-    def get_train_data_by_code(self, code):
-        child_code = []
-        parent = self.class_tree.find(code)
-        children = parent.children
+        abstracts = data_df['abstract'].tolist()
 
-
-        for child in children:
-            if child.children == []:
-                child_code.append(child.label)
-            else:
-                for c in child.children:
-                    child_code.append(c.label)
-
-        X_train_list = []
-        y_list = []
-        for i in range(len(self.X_train)):
-            if self.data_df.iloc[i,]['tags'] in child_code:
-                X_train_list.append(self.X_train[i])
-                if child.children != []:
-                    l = ord(self.data_df.iloc[i,]['code'][0]) - ord('A')
-                else:
-                    l = int(self.data_df.iloc[i,]['code'][1:3]) - 1
-                y_list.append(l)
-        X_train = np.asarray(X_train_list)
-        y = to_categorical(np.asarray(y_list))
-        data = [X_train, y]
-        return data
-
-    def get_test_data_by_code(self, code):
-        child_code = []
-        parent = self.class_tree.find(code)
-        children = parent.children
-
-
-        for child in children:
-            if child.children == []:
-                child_code.append(child.label)
-            else:
-                for c in child.children:
-                    child_code.append(c.label)
-
-        X_test_list = []
-        y_list = []
-        for i in range(33168, len(self.data_df)):
-            if self.data_df.iloc[i,]['tags'] in child_code:
-                X_test_list.append(self.X_test[i-33168])
-                if child.children != []:
-                    l = ord(self.data_df.iloc[i,]['code'][0]) - ord('A')
-                else:
-                    l = int(self.data_df.iloc[i,]['code'][1:3]) - 1
-                y_list.append(l)
-        X_test = np.asarray(X_test_list)
-        y = to_categorical(np.asarray(y_list))
-        data = [X_test, y]
-        return data
-
-    def get_train_data_by_level(self, level):
-        if level == 0:
-            return self.get_train_data_by_code('ROOT')
-        else:
-            child_code = []
-            parent = self.class_tree.find('ROOT')
-            children = parent.children
-
-            y = np.zeros((len(self.X_train), 91), dtype='int32')
-            X_train = []
-
-            count = 0
-            ind = 0
-            for i, child in enumerate(children):
-                X_train_temp, y_temp = self.get_train_data_by_code(child.name)
-                X_train.append(X_train_temp)                
-                y[count:count+y_temp.shape[0], ind:ind+y_temp.shape[1]] = y_temp
-                count = count + y_temp.shape[0]
-                ind = ind + y_temp.shape[1]
-
-            X_train = np.concatenate(X_train, axis=0)
-            return [X_train, y]
-
-    def get_test_data_by_level(self, level):
-        if level == 0:
-            return self.get_test_data_by_code('ROOT')
-        else:
-            child_code = []
-            parent = self.class_tree.find('ROOT')
-            children = parent.children
-
-            y = np.zeros((len(self.X_test), 91), dtype='int32')
-            X_test = []
-
-            count = 0
-            ind = 0
-            for i, child in enumerate(children):
-                X_test_temp, y_temp = self.get_test_data_by_code(child.name)
-                X_test.append(X_test_temp)                
-                y[count:count+y_temp.shape[0], ind:ind+y_temp.shape[1]] = y_temp
-                count = count + y_temp.shape[0]
-                ind = ind + y_temp.shape[1]
-
-            X_test = np.concatenate(X_test, axis=0)
-            return [X_test, y]
-
-
-    def get_embedding_matrix(self):
-        return len(self.word_index), self.embedding_matrix
+        abs = []
+        code_index = []
         
+        for i in range(abstract_num):
+            # print(len(sent_tokenize(data_df['abstract'][i])))
+            code_index.append(code_to_index[data_df['code'][i]])
+
+        tokenizer = Tokenizer(num_words=self.config.data_loader.MAX_NB_WORDS)
+        tokenizer.fit_on_texts(abstracts)
+        # sequences = tokenizer.texts_to_sequences(abstracts)
+
+        # TF-IDF Embedding
+        tfidf = TfidfVectorizer(
+            min_df = 100,
+            max_df = 0.95,
+            max_features = 8000,
+            stop_words = 'english',
+            # token_pattern=r"(?u)\S\S+"
+        )
+        print('train TF-IDF')
+        tfidf.fit(data_df.abstract)
+        print('transform TF-IDF')
+        x_tfidf = tfidf.transform(data_df.abstract).toarray()
+        y_tfidf = np.array(code_index)
+
+        print('Shape of X tensor:', x_tfidf.shape)
+        print('Shape of y tensor:', y_tfidf.shape)
+
+        self.X_train = x_tfidf[:2984,:]
+        self.y_train = y_tfidf[:2984,]
+        self.X_test = x_tfidf[2984:,:]
+        self.y_test = y_tfidf[2984:,]
+
+        print('Shape of X_train tensor:', self.X_train.shape)
+        print('Shape of y_train tensor:', self.y_train.shape)
+        print('Shape of X_test tensor:', self.X_test.shape)
+        print('Shape of y_test tensor:', self.y_test.shape)
+
+        return self.X_train, self.y_train, self.X_test, self.y_test
