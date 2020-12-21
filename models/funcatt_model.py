@@ -1,6 +1,7 @@
 from base.base_model import BaseModel
 
 import tensorflow as tf
+import tensorflow_addons as tfa
 from keras.engine.topology import Layer
 from keras.models import Sequential
 from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Flatten, Embedding, Lambda, Multiply, Concatenate, Masking
@@ -107,4 +108,8 @@ class FuncAttModel(BaseModel):
         
         self.model.compile(loss='categorical_crossentropy',
               optimizer='adam',
-              metrics=['acc', tf.keras.metrics.Recall(name='recall'), tf.keras.metrics.Precision(name='precision')])
+              metrics=['acc', 
+                        tf.keras.metrics.Recall(name='recall'), 
+                        tf.keras.metrics.Precision(name='precision'),
+                        tfa.metrics.F1Score(name='F1_micro', num_classes=45 ,average='micro'),
+                        tfa.metrics.F1Score(name='F1_macro', num_classes=45 ,average='macro')])

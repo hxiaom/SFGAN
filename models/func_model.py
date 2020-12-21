@@ -1,6 +1,7 @@
 from base.base_model import BaseModel
 
 import tensorflow as tf
+import tensorflow_addons as tfa
 from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Flatten, Embedding, Lambda, Multiply, Concatenate, Masking
 from keras.layers import Conv1D, MaxPooling1D, Dropout, LSTM, GRU, Bidirectional, TimeDistributed, Attention, GlobalAveragePooling1D, BatchNormalization
 from keras.models import Model
@@ -28,7 +29,11 @@ class FuncModel(BaseModel):
         self.model = Model(sentence_input, preds)
         self.model.compile(loss='categorical_crossentropy',
                 optimizer='adam',
-                metrics=['acc', tf.keras.metrics.Recall(name='recall'), tf.keras.metrics.Precision(name='precision')])
+                metrics=['acc', 
+                        tf.keras.metrics.Recall(name='recall'), 
+                        tf.keras.metrics.Precision(name='precision'),
+                        tfa.metrics.F1Score(name='F1_micro', num_classes=5 ,average='micro'),
+                        tfa.metrics.F1Score(name='F1_macro', num_classes=5 ,average='macro')])
 
     def load_model(self):
         self.model.load_weights('./experiments/functionality.h5')
