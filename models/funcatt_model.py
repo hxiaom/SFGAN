@@ -63,9 +63,6 @@ class FuncAttModel(BaseModel):
     def __init__(self, word_length, embedding_matrix, func_model, configs):
         super(FuncAttModel, self).__init__(configs)
         self.build_model(word_length, embedding_matrix, func_model)
-        # self.model = []
-        # # self.input_shape = (self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH)
-        # self.x = Input(shape=(self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH), dtype='int32')
 
     def build_model(self, word_length, embedding_matrix, func_model):
         n_classes = 45
@@ -76,16 +73,11 @@ class FuncAttModel(BaseModel):
                                     trainable=False
                                     # mask_zero=True  # mask will report ERROR: CUDNN_STATUS_BAD_PARAM
                                     )
-
-        # embedding_layer = Masking(mask_value=0)(embedding_layer)
         sentence_input = Input(shape=(self.config.data_loader.MAX_SENT_LENGTH,), dtype='int32')
         embedded_sequences = embedding_layer(sentence_input)
-        l_lstm = Bidirectional(GRU(25, return_sequences=True))(embedded_sequences)
+        l_lstm = Bidirectional(GRU(25, return_sequences=True, dropout=0.05))(embedded_sequences)
         l_att = AttLayer(25)(l_lstm)
         sentEncoder = Model(sentence_input, l_att)
-        # c = GlobalAveragePooling1D()(embedded_sequences)
-        # d = Dense(50)(c)
-        # sentEncoder = Model(sentence_input, d)
 
         review_input = Input(shape=(self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH), dtype='int32')
         review_encoder = TimeDistributed(sentEncoder)(review_input)  # Value

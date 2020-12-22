@@ -84,6 +84,7 @@ class WeShModel(BaseModel):
         review_encoder = TimeDistributed(sentEncoder)(review_input)
         l_lstm_sent = Bidirectional(GRU(25, return_sequences=True, dropout=0.05))(review_encoder)
         l_att_sent = AttLayer(25)(l_lstm_sent)
+        
         preds = Dense(n_classes, activation='softmax')(l_att_sent)
         self.model = Model(review_input, preds)
         
