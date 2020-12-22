@@ -93,9 +93,9 @@ class FuncAttModel(BaseModel):
             func_encoder)
         query_value_attention = GlobalAveragePooling1D()(
             query_value_attention_seq)
-        l_att_sent = Concatenate()(
-            [query_encoding, query_value_attention])
-        preds = Dense(n_classes, activation='softmax')(l_att_sent)
+        con = Concatenate()(
+            [l_att_sent, query_value_attention])
+        preds = Dense(n_classes, activation='softmax')(con)
         self.model = Model(review_input, preds)
         
         self.model.compile(loss='categorical_crossentropy',
