@@ -18,7 +18,7 @@
 				"console": "integratedTerminal",
 				"args": [
 					"-c",
-					"./configs/wesh_config.json"
+					"./configs/func_config.json"
 				]
 			}
 		]

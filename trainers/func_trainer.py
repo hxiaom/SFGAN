@@ -4,8 +4,8 @@ from keras.callbacks import ModelCheckpoint, TensorBoard
 
 
 class FuncModelTrainer(BaseTrain):
-    def __init__(self, model, data, config):
-        super(FuncModelTrainer, self).__init__(model, data, config)
+    def __init__(self, model, data_train, data_test, config):
+        super(FuncModelTrainer, self).__init__(model, data_train, data_test, config)
         self.callbacks = []
         self.loss = []
         self.acc = []
@@ -35,15 +35,17 @@ class FuncModelTrainer(BaseTrain):
 
     def train(self):
         history = self.model.fit(
-            self.data[0], self.data[1],
+            self.data_train[0], self.data_train[1],
             epochs=self.config.func_trainer.num_epochs,
             # verbose=self.config.trainer.verbose_training,
             batch_size=self.config.func_trainer.batch_size,
             validation_split=self.config.func_trainer.validation_split,
-            callbacks=self.callbacks,
+            # callbacks=self.callbacks,
         )
         self.loss.extend(history.history['loss'])
         self.acc.extend(history.history['acc'])
         self.val_loss.extend(history.history['val_loss'])
         self.val_acc.extend(history.history['val_acc'])
+
+        self.model.save_weights('./experiments/functionality.h5')
 
