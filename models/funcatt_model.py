@@ -90,7 +90,7 @@ class FuncAttModel(BaseModel):
 
         review_input = Input(shape=(self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH), dtype='int32')
         review_encoder = TimeDistributed(sentEncoder)(review_input)  # Value
-        l_lstm_sent = Bidirectional(GRU(25, return_sequences=True))(review_encoder) # Query
+        l_lstm_sent = Bidirectional(GRU(25, return_sequences=True, dropout=0.05))(review_encoder) # Query
 
         func_classification_model = Model(func_model.input, func_model.layers[-2].output)
         func_classification_model.trainable = False
