@@ -85,6 +85,7 @@ def main():
     embedding_matrix_func = np.loadtxt('./experiments/embedding_matrix_func.txt')
     func_model = FuncModel(word_length_func, embedding_matrix_func, config)
     func_model.load_model()
+    print(func_model.model.summary())
 
     # # create functionality model
     # func_model = FuncModel(config, word_length_func, embedding_matrix_func)
