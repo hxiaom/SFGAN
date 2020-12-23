@@ -129,10 +129,10 @@ def main():
 
     # print("sample shape", y_test.shape)
     answer_vec = funcatt_trainer.model.predict(X_test)
-    print(answer_vec[1])
-    print(np.argmax(answer_vec[1]))
-    print(intermediate_output[1])
-    print(np.argmax(intermediate_output[1], axis=1))
+    print(answer_vec[-1])
+    print(np.argmax(answer_vec[-1]))
+    print(intermediate_output[-1])
+    print(np.argmax(intermediate_output[-1], axis=1))
 
 
 if __name__ == '__main__':
