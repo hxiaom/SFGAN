@@ -76,13 +76,13 @@ class WeShModel(BaseModel):
 
         sentence_input = Input(shape=(self.config.data_loader.MAX_SENT_LENGTH,), dtype='int32')
         embedded_sequences = embedding_layer(sentence_input)
-        l_lstm = Bidirectional(GRU(50, return_sequences=True, dropout=0.05))(embedded_sequences)
+        l_lstm = Bidirectional(GRU(50, return_sequences=True, dropout=0.3))(embedded_sequences)
         l_att = AttLayer(50)(l_lstm)
         sentEncoder = Model(sentence_input, l_att)
 
         review_input = Input(shape=(self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH), dtype='int32')
         review_encoder = TimeDistributed(sentEncoder)(review_input)
-        l_lstm_sent = Bidirectional(GRU(50, return_sequences=True, dropout=0.05))(review_encoder)
+        l_lstm_sent = Bidirectional(GRU(50, return_sequences=True, dropout=0.3))(review_encoder)
         l_att_sent = AttLayer(50)(l_lstm_sent)
         
         preds = Dense(n_classes, activation='softmax')(l_att_sent)
