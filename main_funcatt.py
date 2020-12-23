@@ -134,7 +134,6 @@ def main():
     print(intermediate_output[1])
     print(np.argmax(intermediate_output[1], axis=1))
 
-    func_origin_predict = 
 
 if __name__ == '__main__':
     main()
