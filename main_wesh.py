@@ -63,7 +63,11 @@ def main():
     # load NSFC data
     print('Load NSFC data')
     data_loader = NsfcDataLoader(config)
-    X_train, y_train, X_test, y_test, word_length, embedding_matrix = data_loader.get_train_data()
+    # X_train, y_train, X_test, y_test, word_length, embedding_matrix = data_loader.get_train_data()
+    # print("X_train\n", X_train)
+    # print("y_train\n", y_train)
+
+    X_train, y_train, word_length, embedding_matrix = data_loader.get_train_data_whole()
     print("X_train\n", X_train)
     print("y_train\n", y_train)
 
@@ -72,7 +76,7 @@ def main():
     print(wesh_model.model.summary())
 
     # train model
-    wesh_trainer = WeShModelTrainer(wesh_model.model, [X_train, y_train], [X_test, y_test], config)
+    wesh_trainer = WeShModelTrainer(wesh_model.model, [X_train, y_train], None, config)
     wesh_trainer.train()
 
 if __name__ == '__main__':
