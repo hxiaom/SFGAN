@@ -84,8 +84,8 @@ class WeShModel(BaseModel):
         review_encoder = TimeDistributed(sentEncoder)(review_input)
         l_lstm_sent = Bidirectional(GRU(100, return_sequences=True, dropout=0.3))(review_encoder)
         l_att_sent = AttLayer(100)(l_lstm_sent)
-        
-        preds = Dense(n_classes, activation='softmax')(l_att_sent)
+        den = Dense(100, activation='relu')(l_att_sent)
+        preds = Dense(n_classes, activation='softmax')(den)
         self.model = Model(review_input, preds)
         
         self.model.compile(loss='categorical_crossentropy',
