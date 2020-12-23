@@ -93,7 +93,7 @@ class FuncAttModel(BaseModel):
         x = func_model.layers[-2](x)
         # y = func_model.layers[-1](x)
         func_classification_model = Model(sentence_input, x)
-        func_classification_model.trainable = False
+        # func_classification_model.trainable = False
         func_encoder = TimeDistributed(func_classification_model, name='func')(review_input) # Query
 
         query_value_attention_seq = Attention()([func_encoder, review_encoder, l_lstm_sent])

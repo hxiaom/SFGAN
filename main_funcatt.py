@@ -96,7 +96,7 @@ def main():
 
     func_file = open('./experiments/functionality_output.txt', 'w')
     func_output = np.argmax(test_output, axis=2).tolist()
-    func_file.writelines(["%s\n" % item  for item in a])
+    func_file.writelines(["%s\n" % item  for item in func_output])
 
 if __name__ == '__main__':
     main()
