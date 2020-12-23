@@ -91,16 +91,19 @@ class FuncAttModel(BaseModel):
         x = func_model.layers[-4](embedded_sequences)
         x = func_model.layers[-3](x)
         x = func_model.layers[-2](x)
-        # y = func_model.layers[-1](x)
+        # x = func_model.layers[-1](x)
         func_classification_model = Model(sentence_input, x)
         func_classification_model.trainable = False
-        func_encoder = TimeDistributed(func_classification_model)(review_input) # Query
+        func_encoder = TimeDistributed(func_classification_model, name='func')(review_input) # Query
+        # func_output = TimeDistributed(func_model.layers[-1])(func_encoder)
+        # func_output = Flatten()(func_output)
 
         query_value_attention_seq = Attention()([func_encoder, review_encoder, l_lstm_sent])
         print('l_att_sent - output shape:', l_att_sent.shape)
         print('l_lstm_sent - output shape:', l_lstm_sent.shape)
         print('review_encoder - output shape:', review_encoder.shape)
         print('func_encoder - output shape:', func_encoder.shape)
+        # print('func_output - output shape:', func_output.shape)
         
         # query_encoding = GlobalAveragePooling1D()(
         #     func_encoder)
@@ -112,9 +115,13 @@ class FuncAttModel(BaseModel):
         self.model = Model(review_input, preds)
         
         self.model.compile(loss='categorical_crossentropy',
+            #   loss_weights = [1.0, 0.0],
               optimizer='adam',
               metrics=['acc', 
                         tf.keras.metrics.Recall(name='recall'), 
                         tf.keras.metrics.Precision(name='precision'),
                         tfa.metrics.F1Score(name='F1_micro', num_classes=45 ,average='micro'),
                         tfa.metrics.F1Score(name='F1_macro', num_classes=45 ,average='macro')])
+
+def custom_loss_function(y_true, y_pred):
+    return 0

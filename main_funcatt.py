@@ -24,6 +24,7 @@ from utils.utils import Logger
 
 from tensorflow.python.client import device_lib
 import tensorflow as tf
+from keras.models import Model
 
 import datetime
 import sys
@@ -108,9 +109,32 @@ def main():
     print(funcatt_model.model.summary())
 
     # train model
+    pseudo_func = np.zeros((2984, 90), dtype='float32')
+    pseudo_func_test = np.zeros((1354, 90), dtype='float32')
+    print("y_train shape", y_train.shape)
+    print("pseudo_func shape", pseudo_func.shape)
+    print("y_test shape", y_test.shape)
+    print("pseudo_func_test shape", pseudo_func_test.shape)
+
+
     funcatt_trainer = FuncAttModelTrainer(funcatt_model.model, [X_train, y_train], [X_test, y_test], config)
     funcatt_trainer.train()
 
+    layer_name = 'func'
+    intermediate_layer_model = Model(inputs=funcatt_trainer.model.input,
+                                       outputs=funcatt_trainer.model.get_layer(layer_name).output)
+    y = func_model.model.layers[-1](intermediate_layer_model.output)
+    func_output = Model(inputs=intermediate_layer_model.input, outputs=y)
+    intermediate_output = func_output.predict(X_test)
+
+    # print("sample shape", y_test.shape)
+    answer_vec = funcatt_trainer.model.predict(X_test)
+    print(answer_vec[1])
+    print(np.argmax(answer_vec[1]))
+    print(intermediate_output[1])
+    print(np.argmax(intermediate_output[1], axis=1))
+
+    func_origin_predict = 
 
 if __name__ == '__main__':
     main()
