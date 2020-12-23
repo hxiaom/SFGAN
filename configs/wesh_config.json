@@ -10,22 +10,10 @@
     "EMBEDDING_DIM": 100
   },
   "model":{
-    "name": "sfgan_model.SfganModel"
+    "name": "wesh_model.WeShModel"
   },
-  "func_trainer":{
-    "name": "sfgan_trainer.FuncModelTrainer",
-    "num_epochs": 5,
-    "batch_size": 64,
-    "validation_split": 0.2
-  },
-  "local_trainer":{
-    "name": "sfgan_trainer.LocalModelTrainer",
-    "num_epochs": 100,
-    "batch_size": 64,
-    "validation_split": 0.2
-  },
-  "global_trainer":{
-    "name": "sfgan_trainer.GlobalModelTrainer",
+  "trainer":{
+    "name": "wesh_trainer.WeShModelTrainer",
     "num_epochs": 100,
     "batch_size": 64,
     "validation_split": 0.2
