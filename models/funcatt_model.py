@@ -109,6 +109,7 @@ class FuncAttModel(BaseModel):
             query_value_attention_seq)
         con = Concatenate()(
             [l_att_sent, query_value_attention])
+        con = Dense(50, activation='relu')(con)
         preds = Dense(n_classes, activation='softmax')(con)
         self.model = Model(review_input, preds)
         
