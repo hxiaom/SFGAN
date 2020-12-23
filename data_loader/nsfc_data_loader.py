@@ -70,10 +70,10 @@ class NsfcDataLoader(BaseDataLoader):
         print('Shape of X tensor:', data.shape)
         print('Shape of y tensor:', code_index.shape)
 
-        self.X_train = data[:2984,:]
-        self.y_train = code_index[:2984,:]
-        self.X_test = data[2984:,:]
-        self.y_test = code_index[2984:,:]
+        self.X_train = data[:7807,:]
+        self.y_train = code_index[:7807,:]
+        self.X_test = data[7807:,:]
+        self.y_test = code_index[7807:,:]
 
         print('Shape of X_train tensor:', self.X_train.shape)
         print('Shape of y_train tensor:', self.y_train.shape)
@@ -150,10 +150,10 @@ class NsfcDataLoader(BaseDataLoader):
         print('Shape of X tensor:', data.shape)
         print('Shape of y tensor:', code_index.shape)
 
-        self.X_train = data[:2984,:]
-        self.y_train = code_index[:2984,:]
-        self.X_test = data[2984:,:]
-        self.y_test = code_index[2984:,:]
+        self.X_train = data[:7807,:]
+        self.y_train = code_index[:7807,:]
+        self.X_test = data[7807:,:]
+        self.y_test = code_index[7807:,:]
 
         print('Shape of X_train tensor:', self.X_train.shape)
         print('Shape of y_train tensor:', self.y_train.shape)
@@ -224,10 +224,11 @@ class NsfcDataLoader(BaseDataLoader):
         print('Shape of X tensor:', x_tfidf.shape)
         print('Shape of y tensor:', y_tfidf.shape)
 
-        self.X_train = x_tfidf[:2984,:]
-        self.y_train = y_tfidf[:2984,]
-        self.X_test = x_tfidf[2984:,:]
-        self.y_test = y_tfidf[2984:,]
+        # old index = 2984
+        self.X_train = x_tfidf[:7807,:]
+        self.y_train = y_tfidf[:7807,]
+        self.X_test = x_tfidf[7807:,:]
+        self.y_test = y_tfidf[7807:,]
 
         print('Shape of X_train tensor:', self.X_train.shape)
         print('Shape of y_train tensor:', self.y_train.shape)
