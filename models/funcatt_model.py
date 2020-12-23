@@ -75,13 +75,13 @@ class FuncAttModel(BaseModel):
                                     )
         sentence_input = Input(shape=(self.config.data_loader.MAX_SENT_LENGTH,), dtype='int32')
         embedded_sequences = embedding_layer(sentence_input)
-        l_lstm = Bidirectional(GRU(25, return_sequences=True, dropout=0.3))(embedded_sequences)
+        l_lstm = Bidirectional(GRU(25, return_sequences=True, dropout=0.05))(embedded_sequences)
         l_att = AttLayer(25)(l_lstm)
         sentEncoder = Model(sentence_input, l_att)
 
         review_input = Input(shape=(self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH), dtype='int32')
         review_encoder = TimeDistributed(sentEncoder)(review_input)  # Value
-        l_lstm_sent = Bidirectional(GRU(25, return_sequences=True, dropout=0.3))(review_encoder)
+        l_lstm_sent = Bidirectional(GRU(25, return_sequences=True, dropout=0.05))(review_encoder)
         l_att_sent = AttLayer(25)(l_lstm_sent) # Key
 
         # func_classification_model = Model(func_model.input, func_model.layers[-2].output)
@@ -93,10 +93,10 @@ class FuncAttModel(BaseModel):
         x = func_model.layers[-2](x)
         # y = func_model.layers[-1](x)
         func_classification_model = Model(sentence_input, x)
-        # func_classification_model.trainable = False
+        func_classification_model.trainable = False
         func_encoder = TimeDistributed(func_classification_model, name='func')(review_input) # Query
 
-        query_value_attention_seq = Attention()([func_encoder, review_encoder, l_lstm_sent])
+        query_value_attention_seq = Attention()([func_encoder, review_encoder])
         print('l_att_sent - output shape:', l_att_sent.shape)
         print('l_lstm_sent - output shape:', l_lstm_sent.shape)
         print('review_encoder - output shape:', review_encoder.shape)
