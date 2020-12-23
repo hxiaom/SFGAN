@@ -87,11 +87,21 @@ def main():
     func_model.load_model()
     print(func_model.model.summary())
 
-    # # create functionality model
-    # func_model = FuncModel(config, word_length_func, embedding_matrix_func)
-    
-    # # train functionality model
-    # func_trainer = FuncModelTrainer(func_model.model, [X_func, y_func], config)
+    # embedding_layer = Embedding(word_length + 1,
+    #                                 self.config.data_loader.EMBEDDING_DIM,
+    #                                 weights=[embedding_matrix],
+    #                                 input_length=self.config.data_loader.MAX_SENT_LENGTH,
+    #                                 trainable=False
+    #                                 # mask_zero=True  # mask will report ERROR: CUDNN_STATUS_BAD_PARAM
+    #                                 )
+    # sentence_input = Input(shape=(self.config.data_loader.MAX_SENT_LENGTH,), dtype='int32')
+    # x = func_model.layers[-4](embedded_sequences)
+    # x = func_model.layers[-3](x)
+    # x = func_model.layers[-2](x)
+    # y = func_model.layers[-1](x)
+    # func_classification_model = Model(sentence_input, x)
+    # func_classification_model.trainable = False
+    # func_encoder = TimeDistributed(func_classification_model)(review_input) # Query
 
     # create model
     funcatt_model = FuncAttModel(word_length, embedding_matrix, func_model.model, config)
