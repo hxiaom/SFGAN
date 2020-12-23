@@ -2,6 +2,7 @@ from base.base_trainer import BaseTrain
 import os
 from keras.callbacks import ModelCheckpoint, TensorBoard
 from sklearn.utils import class_weight
+import numpy as np
 
 class WeShModelTrainer(BaseTrain):
     def __init__(self, model, data_train, data_test, config):
@@ -33,17 +34,21 @@ class WeShModelTrainer(BaseTrain):
         )
 
     def train(self):
+        y_int = [y.argmax() for y in self.data_train[1]]
         class_weights = class_weight.compute_class_weight('balanced',
-                                                 np.unique(self.data_train[1]),
-                                                 self.data_train[1])
+                                                 np.arange(45),
+                                                 y_int)
+        print(class_weights)
+        class_weights = {i : class_weights[i] for i in range(45)}
+        print(class_weights)
         history = self.model.fit(
             self.data_train[0], self.data_train[1],
             epochs=self.config.trainer.num_epochs,
             class_weight=class_weights,
             # verbose=self.config.trainer.verbose_training,
             batch_size=self.config.trainer.batch_size,
-            # validation_data = (self.data_test[0], self.data_test[1])
-            validation_split=self.config.trainer.validation_split,
+            validation_data = (self.data_test[0], self.data_test[1]),
+            # validation_split=self.config.trainer.validation_split,
             # callbacks=self.callbacks,
         )
         self.loss.extend(history.history['loss'])
