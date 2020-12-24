@@ -47,5 +47,5 @@ class FuncModelTrainer(BaseTrain):
         self.val_loss.extend(history.history['val_loss'])
         self.val_acc.extend(history.history['val_acc'])
 
-        self.model.save_weights('./experiments/functionality.h5')
+        self.model.save_weights('./experiments/functionality_200.h5')
 
