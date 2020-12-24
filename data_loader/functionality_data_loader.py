@@ -84,6 +84,6 @@ class FunctionalityDataLoader(BaseDataLoader):
                 # words not found in embedding index will be all-zeros.
                 self.embedding_matrix[i] = embedding_vector
 
-        np.savetxt('./experiments/embedding_matrix_func.txt', self.embedding_matrix)
+        np.savetxt('./experiments/embedding_matrix_func_100.txt', self.embedding_matrix)
 
         return self.X_train, self.y_train, len(self.word_index), self.embedding_matrix

@@ -24,7 +24,7 @@ class FuncModel(BaseModel):
         embedded_sequences = embedding_layer(sentence_input)
         lstm = Bidirectional(GRU(50, return_sequences=True))(embedded_sequences)
         flat = Flatten()(lstm)
-        dense = Dense(50, activation='relu')(flat)
+        dense = Dense(100, activation='relu')(flat)
         preds = Dense(5, activation='softmax')(dense)
         self.model = Model(sentence_input, preds)
         self.model.compile(loss='categorical_crossentropy',
@@ -36,4 +36,4 @@ class FuncModel(BaseModel):
                         tfa.metrics.F1Score(name='F1_macro', num_classes=5 ,average='macro')])
 
     def load_model(self):
-        self.model.load_weights('./experiments/functionality.h5')
+        self.model.load_weights('./experiments/functionality_100.h5')
