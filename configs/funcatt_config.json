@@ -11,17 +11,11 @@
     "EMBEDDING_DIM": 100
   },
   "model":{
-    "name": "sfgan_model.SfganModel"
+    "name": "funcatt_model.FuncAttModel"
   },
-  "local_trainer":{
-    "name": "sfgan_trainer.LocalModelTrainer",
-    "num_epochs": 100,
-    "batch_size": 64,
-    "validation_split": 0.2
-  },
-  "global_trainer":{
-    "name": "sfgan_trainer.GlobalModelTrainer",
-    "num_epochs": 100,
+  "trainer":{
+    "name": "funcatt_trainer.FuncAttModelTrainer",
+    "num_epochs": 20,
     "batch_size": 64,
     "validation_split": 0.2
   },

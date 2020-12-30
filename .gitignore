@@ -1,5 +1,6 @@
 data/label_hier copy.txt
 data/glove*
+data/*
 experiments
 data/data_processor.py
 dataset_statistics

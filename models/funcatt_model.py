@@ -62,10 +62,11 @@ class AttLayer(Layer):
 class FuncAttModel(BaseModel):
     def __init__(self, word_length, embedding_matrix, func_model, configs):
         super(FuncAttModel, self).__init__(configs)
+        self.n_classes = 8
         self.build_model(word_length, embedding_matrix, func_model)
 
     def build_model(self, word_length, embedding_matrix, func_model):
-        n_classes = 45
+        
         embedding_layer = Embedding(word_length + 1,
                                     self.config.data_loader.EMBEDDING_DIM,
                                     weights=[embedding_matrix],
@@ -110,7 +111,7 @@ class FuncAttModel(BaseModel):
         con = Concatenate()(
             [l_att_sent, query_value_attention])
         con = Dense(50, activation='relu')(con)
-        preds = Dense(n_classes, activation='softmax')(con)
+        preds = Dense(self.n_classes, activation='softmax')(con)
         self.model = Model(review_input, preds)
         
         self.model.compile(loss='categorical_crossentropy',
@@ -119,8 +120,8 @@ class FuncAttModel(BaseModel):
               metrics=['acc', 
                         tf.keras.metrics.Recall(name='recall'), 
                         tf.keras.metrics.Precision(name='precision'),
-                        tfa.metrics.F1Score(name='F1_micro', num_classes=45 ,average='micro'),
-                        tfa.metrics.F1Score(name='F1_macro', num_classes=45 ,average='macro')])
+                        tfa.metrics.F1Score(name='F1_micro', num_classes=self.n_classes, average='micro'),
+                        tfa.metrics.F1Score(name='F1_macro', num_classes=self.n_classes, average='macro')])
 
 def custom_loss_function(y_true, y_pred):
     return 0
