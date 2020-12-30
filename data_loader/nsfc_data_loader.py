@@ -287,7 +287,6 @@ class NsfcDataLoader(BaseDataLoader):
         print('Shape of X tensor:', x_tfidf.shape)
         print('Shape of y tensor:', y_tfidf.shape)
 
-        # old index = 2984
         self.X_train = x_tfidf[:self.split_index,:]
         self.y_train = y_tfidf[:self.split_index,]
         self.X_test = x_tfidf[self.split_index:,:]

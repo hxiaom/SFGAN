@@ -6,6 +6,7 @@ from keras.engine.topology import Layer
 from keras.models import Sequential
 from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Flatten, Embedding, Lambda, Multiply, Concatenate, Masking
 from keras.layers import Conv1D, MaxPooling1D, Dropout, LSTM, GRU, Bidirectional, TimeDistributed, Attention, GlobalAveragePooling1D, BatchNormalization
+from keras.layers import AdditiveAttention
 from keras import initializers
 from keras import backend as K
 from keras.models import Model
@@ -97,7 +98,7 @@ class FuncAttModel(BaseModel):
         func_classification_model.trainable = False
         func_encoder = TimeDistributed(func_classification_model, name='func')(review_input) # Query
 
-        query_value_attention_seq = Attention()([func_encoder, review_encoder])
+        query_value_attention_seq = AdditiveAttention()([func_encoder, review_encoder])
         print('l_att_sent - output shape:', l_att_sent.shape)
         print('l_lstm_sent - output shape:', l_lstm_sent.shape)
         print('review_encoder - output shape:', review_encoder.shape)
