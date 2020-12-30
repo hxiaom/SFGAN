@@ -12,6 +12,7 @@ class FunctionalityDataLoader(BaseDataLoader):
     def __init__(self, config):
         # load data
         super(FunctionalityDataLoader, self).__init__(config)
+        
 
 
     def get_train_data(self):

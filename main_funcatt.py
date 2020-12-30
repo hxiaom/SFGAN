@@ -72,7 +72,7 @@ def main():
 
     # load functionality model
     word_length_func = 136411
-    embedding_matrix_func = np.loadtxt('./experiments/embedding_matrix_func_100.txt')
+    embedding_matrix_func = np.loadtxt('./experiments/embedding_matrix_func_200.txt')
     func_model = FuncModel(word_length_func, embedding_matrix_func, config)
     func_model.load_model()
     print(func_model.model.summary())

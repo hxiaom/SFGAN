@@ -14,21 +14,29 @@ import os
 class NsfcDataLoader(BaseDataLoader):
     def __init__(self, config):
         super(NsfcDataLoader, self).__init__(config)
+        # self.file_name = './data/dataset_level2.txt'
+        # self.split_index = 7807
+        # self.code_to_index = {'A0101':0, 'A0102':1, 'A0103':2, 'A0104':3, 'A0105':4,
+        #                 'A0106':5, 'A0107':6, 'A0108':7, 'A0109':8, 'A0110':9,
+        #                 'A0111':10, 'A0112':11, 'A0113':12, 'A0114':13, 'A0115':14,
+        #                 'A0116':15, 'A0117':16, 'A0201':17, 'A0202':18, 'A0203':19,
+        #                 'A0204':20, 'A0205':21, 'A0206':22, 'A0301':23, 'A0302':24,
+        #                 'A0303':25, 'A0304':26, 'A0305':27, 'A0306':28, 'A0307':29,
+        #                 'A0308':30, 'A0309':31, 'A0310':32, 'A0401':33, 'A0402':34,
+        #                 'A0403':35, 'A0404':36, 'A0405':37, 'A0501':38, 'A0502':39,
+        #                 'A0503':40, 'A0504':41, 'A0505':42, 'A0506':43, 'A0507':44}
+        
+        self.file_name = './data/dataset_whole_level.txt'
+        self.split_index = 77607
+        self.code_to_index = {'A':0, 'B':1, 'C':2, 'D':3, 
+                            'E':4, 'F':5, 'G':6, 'H':7}
 
     def get_train_data(self):
-        data_df = pd.read_csv('./data/dataset_level2.txt', 
+        data_df = pd.read_csv(self.file_name, 
                                 sep='\t', 
                                 header=None, 
                                 names=['code', 'abstract', 'train_or_test'])
-        code_to_index = {'A0101':0, 'A0102':1, 'A0103':2, 'A0104':3, 'A0105':4,
-                        'A0106':5, 'A0107':6, 'A0108':7, 'A0109':8, 'A0110':9,
-                        'A0111':10, 'A0112':11, 'A0113':12, 'A0114':13, 'A0115':14,
-                        'A0116':15, 'A0117':16, 'A0201':17, 'A0202':18, 'A0203':19,
-                        'A0204':20, 'A0205':21, 'A0206':22, 'A0301':23, 'A0302':24,
-                        'A0303':25, 'A0304':26, 'A0305':27, 'A0306':28, 'A0307':29,
-                        'A0308':30, 'A0309':31, 'A0310':32, 'A0401':33, 'A0402':34,
-                        'A0403':35, 'A0404':36, 'A0405':37, 'A0501':38, 'A0502':39,
-                        'A0503':40, 'A0504':41, 'A0505':42, 'A0506':43, 'A0507':44}
+        
         abstract_num = len(data_df)
 
         abstracts = data_df['abstract'].tolist()
@@ -39,7 +47,7 @@ class NsfcDataLoader(BaseDataLoader):
         for i in range(abstract_num):
             # print(len(sent_tokenize(data_df['abstract'][i])))
             abstract_sents.append(sent_tokenize(data_df['abstract'][i]))
-            code_index.append(code_to_index[data_df['code'][i]])
+            code_index.append(self.code_to_index[data_df['code'][i]])
 
         tokenizer = Tokenizer(num_words=self.config.data_loader.MAX_NB_WORDS)
         tokenizer.fit_on_texts(abstracts)
@@ -70,10 +78,10 @@ class NsfcDataLoader(BaseDataLoader):
         print('Shape of X tensor:', data.shape)
         print('Shape of y tensor:', code_index.shape)
 
-        self.X_train = data[:7807,:]
-        self.y_train = code_index[:7807,:]
-        self.X_test = data[7807:,:]
-        self.y_test = code_index[7807:,:]
+        self.X_train = data[:self.split_index,:]
+        self.y_train = code_index[:self.split_index,:]
+        self.X_test = data[self.split_index:,:]
+        self.y_test = code_index[self.split_index:,:]
 
         print('Shape of X_train tensor:', self.X_train.shape)
         print('Shape of y_train tensor:', self.y_train.shape)
@@ -99,19 +107,11 @@ class NsfcDataLoader(BaseDataLoader):
         return self.X_train, self.y_train, self.X_test, self.y_test, len(self.word_index), self.embedding_matrix
 
     def get_train_data_whole(self):
-        data_df = pd.read_csv('./data/dataset_level2.txt', 
+        data_df = pd.read_csv(self.file_name, 
                                 sep='\t', 
                                 header=None, 
                                 names=['code', 'abstract', 'train_or_test'])
-        code_to_index = {'A0101':0, 'A0102':1, 'A0103':2, 'A0104':3, 'A0105':4,
-                        'A0106':5, 'A0107':6, 'A0108':7, 'A0109':8, 'A0110':9,
-                        'A0111':10, 'A0112':11, 'A0113':12, 'A0114':13, 'A0115':14,
-                        'A0116':15, 'A0117':16, 'A0201':17, 'A0202':18, 'A0203':19,
-                        'A0204':20, 'A0205':21, 'A0206':22, 'A0301':23, 'A0302':24,
-                        'A0303':25, 'A0304':26, 'A0305':27, 'A0306':28, 'A0307':29,
-                        'A0308':30, 'A0309':31, 'A0310':32, 'A0401':33, 'A0402':34,
-                        'A0403':35, 'A0404':36, 'A0405':37, 'A0501':38, 'A0502':39,
-                        'A0503':40, 'A0504':41, 'A0505':42, 'A0506':43, 'A0507':44}
+
         abstract_num = len(data_df)
 
         abstracts = data_df['abstract'].tolist()
@@ -122,7 +122,7 @@ class NsfcDataLoader(BaseDataLoader):
         for i in range(abstract_num):
             # print(len(sent_tokenize(data_df['abstract'][i])))
             abstract_sents.append(sent_tokenize(data_df['abstract'][i]))
-            code_index.append(code_to_index[data_df['code'][i]])
+            code_index.append(self.code_to_index[data_df['code'][i]])
 
         tokenizer = Tokenizer(num_words=self.config.data_loader.MAX_NB_WORDS)
         tokenizer.fit_on_texts(abstracts)
@@ -178,19 +178,11 @@ class NsfcDataLoader(BaseDataLoader):
         return self.X_train, self.y_train, len(self.word_index), self.embedding_matrix
 
     def get_train_data_plain(self):
-        data_df = pd.read_csv('./data/dataset_level2.txt', 
+        data_df = pd.read_csv(self.file_name, 
                                 sep='\t', 
                                 header=None, 
                                 names=['code', 'abstract', 'train_or_test'])
-        code_to_index = {'A0101':0, 'A0102':1, 'A0103':2, 'A0104':3, 'A0105':4,
-                        'A0106':5, 'A0107':6, 'A0108':7, 'A0109':8, 'A0110':9,
-                        'A0111':10, 'A0112':11, 'A0113':12, 'A0114':13, 'A0115':14,
-                        'A0116':15, 'A0117':16, 'A0201':17, 'A0202':18, 'A0203':19,
-                        'A0204':20, 'A0205':21, 'A0206':22, 'A0301':23, 'A0302':24,
-                        'A0303':25, 'A0304':26, 'A0305':27, 'A0306':28, 'A0307':29,
-                        'A0308':30, 'A0309':31, 'A0310':32, 'A0401':33, 'A0402':34,
-                        'A0403':35, 'A0404':36, 'A0405':37, 'A0501':38, 'A0502':39,
-                        'A0503':40, 'A0504':41, 'A0505':42, 'A0506':43, 'A0507':44}
+
         abstract_num = len(data_df)
 
         abstracts = data_df['abstract'].tolist()
@@ -200,7 +192,7 @@ class NsfcDataLoader(BaseDataLoader):
         
         for i in range(abstract_num):
             # print(len(sent_tokenize(data_df['abstract'][i])))
-            code_index.append(code_to_index[data_df['code'][i]])
+            code_index.append(self.code_to_index[data_df['code'][i]])
 
         tokenizer = Tokenizer(num_words=self.config.data_loader.MAX_NB_WORDS)
         tokenizer.fit_on_texts(abstracts)
@@ -229,10 +221,10 @@ class NsfcDataLoader(BaseDataLoader):
         print('Shape of X tensor:', data.shape)
         print('Shape of y tensor:', code_index.shape)
 
-        self.X_train = data[:7807,:]
-        self.y_train = code_index[:7807,:]
-        self.X_test = data[7807:,:]
-        self.y_test = code_index[7807:,:]
+        self.X_train = data[:self.split_index,:]
+        self.y_train = code_index[:self.split_index,:]
+        self.X_test = data[self.split_index:,:]
+        self.y_test = code_index[self.split_index:,:]
 
         print('Shape of X_train tensor:', self.X_train.shape)
         print('Shape of y_train tensor:', self.y_train.shape)
@@ -258,19 +250,11 @@ class NsfcDataLoader(BaseDataLoader):
         return self.X_train, self.y_train, self.X_test, self.y_test, len(self.word_index), self.embedding_matrix
 
     def get_train_data_tfidf(self):
-        data_df = pd.read_csv('./data/dataset_level2.txt', 
+        data_df = pd.read_csv(self.file_name, 
                                 sep='\t', 
                                 header=None, 
                                 names=['code', 'abstract', 'train_or_test'])
-        code_to_index = {'A0101':0, 'A0102':1, 'A0103':2, 'A0104':3, 'A0105':4,
-                        'A0106':5, 'A0107':6, 'A0108':7, 'A0109':8, 'A0110':9,
-                        'A0111':10, 'A0112':11, 'A0113':12, 'A0114':13, 'A0115':14,
-                        'A0116':15, 'A0117':16, 'A0201':17, 'A0202':18, 'A0203':19,
-                        'A0204':20, 'A0205':21, 'A0206':22, 'A0301':23, 'A0302':24,
-                        'A0303':25, 'A0304':26, 'A0305':27, 'A0306':28, 'A0307':29,
-                        'A0308':30, 'A0309':31, 'A0310':32, 'A0401':33, 'A0402':34,
-                        'A0403':35, 'A0404':36, 'A0405':37, 'A0501':38, 'A0502':39,
-                        'A0503':40, 'A0504':41, 'A0505':42, 'A0506':43, 'A0507':44}
+
         abstract_num = len(data_df)
 
         abstracts = data_df['abstract'].tolist()
@@ -280,7 +264,7 @@ class NsfcDataLoader(BaseDataLoader):
         
         for i in range(abstract_num):
             # print(len(sent_tokenize(data_df['abstract'][i])))
-            code_index.append(code_to_index[data_df['code'][i]])
+            code_index.append(self.code_to_index[data_df['code'][i]])
 
         tokenizer = Tokenizer(num_words=self.config.data_loader.MAX_NB_WORDS)
         tokenizer.fit_on_texts(abstracts)
@@ -304,10 +288,10 @@ class NsfcDataLoader(BaseDataLoader):
         print('Shape of y tensor:', y_tfidf.shape)
 
         # old index = 2984
-        self.X_train = x_tfidf[:7807,:]
-        self.y_train = y_tfidf[:7807,]
-        self.X_test = x_tfidf[7807:,:]
-        self.y_test = y_tfidf[7807:,]
+        self.X_train = x_tfidf[:self.split_index,:]
+        self.y_train = y_tfidf[:self.split_index,]
+        self.X_test = x_tfidf[self.split_index:,:]
+        self.y_test = y_tfidf[self.split_index:,]
 
         print('Shape of X_train tensor:', self.X_train.shape)
         print('Shape of y_train tensor:', self.y_train.shape)

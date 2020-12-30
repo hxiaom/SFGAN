@@ -75,14 +75,14 @@ class FuncAttModel(BaseModel):
                                     )
         sentence_input = Input(shape=(self.config.data_loader.MAX_SENT_LENGTH,), dtype='int32')
         embedded_sequences = embedding_layer(sentence_input)
-        l_lstm = Bidirectional(GRU(50, return_sequences=True, dropout=0.05))(embedded_sequences)
-        l_att = AttLayer(50)(l_lstm)
+        l_lstm = Bidirectional(GRU(100, return_sequences=True, dropout=0.3))(embedded_sequences)
+        l_att = AttLayer(100)(l_lstm)
         sentEncoder = Model(sentence_input, l_att)
 
         review_input = Input(shape=(self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH), dtype='int32')
         review_encoder = TimeDistributed(sentEncoder)(review_input)  # Value
-        l_lstm_sent = Bidirectional(GRU(50, return_sequences=True, dropout=0.05))(review_encoder)
-        l_att_sent = AttLayer(50)(l_lstm_sent) # Key
+        l_lstm_sent = Bidirectional(GRU(100, return_sequences=True, dropout=0.3))(review_encoder)
+        l_att_sent = AttLayer(100)(l_lstm_sent) # Key
 
         # func_classification_model = Model(func_model.input, func_model.layers[-2].output)
         # func_classification_model.trainable = False

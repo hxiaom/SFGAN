@@ -12,7 +12,7 @@ class TextCNNModel(BaseModel):
         self.build_model(word_length, embedding_matrix)
 
     def build_model(self, word_length, embedding_matrix):
-        num_classes = 45
+        num_classes = 8
         dropout_rate = 0.4
         embedding_layer = Embedding(word_length + 1,
                                     self.config.data_loader.EMBEDDING_DIM,
@@ -52,5 +52,5 @@ class TextCNNModel(BaseModel):
                 metrics=['acc', 
                         tf.keras.metrics.Recall(name='recall'), 
                         tf.keras.metrics.Precision(name='precision'),
-                        tfa.metrics.F1Score(name='F1_micro', num_classes=45 ,average='micro'),
-                        tfa.metrics.F1Score(name='F1_macro', num_classes=45 ,average='macro')])
+                        tfa.metrics.F1Score(name='F1_micro', num_classes=8 ,average='micro'),
+                        tfa.metrics.F1Score(name='F1_macro', num_classes=8 ,average='macro')])
