@@ -98,7 +98,7 @@ class FuncAttModel(BaseModel):
         func_classification_model.trainable = False
         func_encoder = TimeDistributed(func_classification_model, name='func')(review_input) # Query
 
-        query_value_attention_seq = AdditiveAttention()([func_encoder, review_encoder])
+        query_value_attention_seq = AdditiveAttention(dropout=0.3)([func_encoder, review_encoder])
         print('l_att_sent - output shape:', l_att_sent.shape)
         print('l_lstm_sent - output shape:', l_lstm_sent.shape)
         print('review_encoder - output shape:', review_encoder.shape)
