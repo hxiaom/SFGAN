@@ -62,10 +62,11 @@ class AttLayer(Layer):
 class WeShModel(BaseModel):
     def __init__(self, word_length, embedding_matrix, configs):
         super(WeShModel, self).__init__(configs)
+        self.n_classes = 8
         self.build_model(word_length, embedding_matrix)
 
     def build_model(self, word_length, embedding_matrix):
-        n_classes = 45
+        
         embedding_layer = Embedding(word_length + 1,
                                     self.config.data_loader.EMBEDDING_DIM,
                                     weights=[embedding_matrix],
@@ -85,7 +86,7 @@ class WeShModel(BaseModel):
         l_lstm_sent = Bidirectional(GRU(100, return_sequences=True, dropout=0.3))(review_encoder)
         l_att_sent = AttLayer(100)(l_lstm_sent)
         den = Dense(100, activation='relu')(l_att_sent)
-        preds = Dense(n_classes, activation='softmax')(den)
+        preds = Dense(self.n_classes, activation='softmax')(den)
         self.model = Model(review_input, preds)
         
         self.model.compile(loss='categorical_crossentropy',
@@ -93,5 +94,5 @@ class WeShModel(BaseModel):
               metrics=['acc', 
                         tf.keras.metrics.Recall(name='recall'), 
                         tf.keras.metrics.Precision(name='precision'),
-                        tfa.metrics.F1Score(name='F1_micro', num_classes=45 ,average='micro'),
-                        tfa.metrics.F1Score(name='F1_macro', num_classes=45 ,average='macro')])
+                        tfa.metrics.F1Score(name='F1_micro', num_classes=self.n_classes, average='micro'),
+                        tfa.metrics.F1Score(name='F1_macro', num_classes=self.n_classes, average='macro')])

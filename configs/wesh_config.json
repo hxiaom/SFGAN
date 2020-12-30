@@ -14,8 +14,8 @@
   },
   "trainer":{
     "name": "wesh_trainer.WeShModelTrainer",
-    "num_epochs": 100,
-    "batch_size": 32,
+    "num_epochs": 20,
+    "batch_size": 64,
     "validation_split": 0.282
   },
   "callbacks":{

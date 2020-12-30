@@ -34,17 +34,17 @@ class WeShModelTrainer(BaseTrain):
         )
 
     def train(self):
-        y_int = [y.argmax() for y in self.data_train[1]]
-        class_weights = class_weight.compute_class_weight('balanced',
-                                                 np.arange(45),
-                                                 y_int)
-        print(class_weights)
-        class_weights = {i : class_weights[i] for i in range(45)}
-        print(class_weights)
+        # y_int = [y.argmax() for y in self.data_train[1]]
+        # class_weights = class_weight.compute_class_weight('balanced',
+        #                                          np.arange(45),
+        #                                          y_int)
+        # print(class_weights)
+        # class_weights = {i : class_weights[i] for i in range(45)}
+        # print(class_weights)
         history = self.model.fit(
             self.data_train[0], self.data_train[1],
             epochs=self.config.trainer.num_epochs,
-            class_weight=class_weights,
+            # class_weight=class_weights,
             # verbose=self.config.trainer.verbose_training,
             batch_size=self.config.trainer.batch_size,
             validation_data = (self.data_test[0], self.data_test[1]),
