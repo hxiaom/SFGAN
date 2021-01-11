@@ -9,6 +9,7 @@ from keras.layers import Conv1D, MaxPooling1D, Dropout, LSTM, GRU, Bidirectional
 from keras import initializers
 from keras import backend as K
 from keras.models import Model
+from keras.metrics import categorical_accuracy
 
 from time import time
 import os
@@ -62,7 +63,7 @@ class AttLayer(Layer):
 class WeShModel(BaseModel):
     def __init__(self, word_length, embedding_matrix, configs):
         super(WeShModel, self).__init__(configs)
-        self.n_classes = 54
+        self.n_classes = 45
         self.build_model(word_length, embedding_matrix)
 
     def build_model(self, word_length, embedding_matrix):
@@ -91,7 +92,7 @@ class WeShModel(BaseModel):
         
         self.model.compile(loss='binary_crossentropy',
               optimizer='adam',
-              metrics=['accuracy', 
+              metrics=['categorical_accuracy', 
                         tf.keras.metrics.Recall(name='recall'), 
                         tf.keras.metrics.Precision(name='precision'),
                         tfa.metrics.F1Score(name='F1_micro', num_classes=self.n_classes, average='micro'),
