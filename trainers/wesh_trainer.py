@@ -26,12 +26,12 @@ class WeShModelTrainer(BaseTrain):
             )
         )
 
-        self.callbacks.append(
-            TensorBoard(
-                log_dir=self.config.callbacks.tensorboard_log_dir,
-                write_graph=self.config.callbacks.tensorboard_write_graph,
-            )
-        )
+        # self.callbacks.append(
+        #     TensorBoard(
+        #         log_dir=self.config.callbacks.tensorboard_log_dir,  # not setting
+        #         write_graph=self.config.callbacks.tensorboard_write_graph,
+        #     )
+        # )
 
     def train(self):
         # y_int = [y.argmax() for y in self.data_train[1]]
@@ -49,7 +49,7 @@ class WeShModelTrainer(BaseTrain):
             batch_size=self.config.trainer.batch_size,
             validation_data = (self.data_test[0], self.data_test[1]),
             # validation_split=self.config.trainer.validation_split,
-            # callbacks=self.callbacks,
+            callbacks=self.callbacks,
         )
         self.loss.extend(history.history['loss'])
         self.acc.extend(history.history['acc'])

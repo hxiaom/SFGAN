@@ -159,7 +159,6 @@ class NsfcDataLoader(BaseDataLoader):
         # data = pad_sequences(sequences, maxlen=self.config.data_loader.MAX_SENTS)
 
         one_hot = MultiLabelBinarizer()
-        print(codes)
         code_index = one_hot.fit_transform(codes)
 
         # labels = np.asarray(labels)

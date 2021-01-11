@@ -59,6 +59,10 @@ class AttLayer(Layer):
     def compute_output_shape(self, input_shape):
         return (input_shape[0], input_shape[-1])
 
+    def get_config(self):  # https://stackoverflow.com/questions/58678836/notimplementederror-layers-with-arguments-in-init-must-override-get-conf/58680354#58680354
+        config = super().get_config().copy()
+        return config
+
 
 class WeShModel(BaseModel):
     def __init__(self, word_length, embedding_matrix, configs):
