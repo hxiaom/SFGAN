@@ -86,13 +86,13 @@ class WeShModel(BaseModel):
         l_att = AttLayer(50)(l_lstm)
         sentEncoder = Model(sentence_input, l_att)
 
-        review_input = Input(shape=(self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH), dtype='int32')
-        review_encoder = TimeDistributed(sentEncoder)(review_input)
+        proposal_input = Input(shape=(self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH), dtype='int32')
+        review_encoder = TimeDistributed(sentEncoder)(proposal_input)
         l_lstm_sent = Bidirectional(GRU(50, return_sequences=True, dropout=0.3))(review_encoder)
         l_att_sent = AttLayer(50)(l_lstm_sent)
         den = Dense(50, activation='relu')(l_att_sent)
         preds = Dense(self.n_classes, activation='sigmoid')(den)
-        self.model = Model(review_input, preds)
+        self.model = Model(proposal_input, preds)
         
         self.model.compile(loss='binary_crossentropy',
               optimizer='adam',
