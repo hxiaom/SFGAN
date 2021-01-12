@@ -60,14 +60,17 @@ def main():
     # print("y_train\n", y_train)
 
     # create model
-    wesh_model = keras.models.load_model('./experiments/2021-01-11/wesh_1/checkpoints/wesh_1-20-0.05.hdf5', custom_objects={'AttLayer': AttLayer})
-    print(wesh_model.model.summary())
+    wesh_model = keras.models.load_model('./experiments/2021-01-12/wesh_1/checkpoints/wesh_1-53-0.05.hdf5')
+    print(wesh_model.summary())
 
 
     # train model
     # wesh_trainer = WeShModelTrainer(wesh_model.model, [X_train, y_train], None, config)
-    test_result = wesh_model.predict_classes([X_train, y_train])
+    test_result = wesh_model.predict(X_test)
+    test_result = test_result.argmax(axis=-1)
+    test_true = y_test.argmax(axis=-1)
     print(test_result)
+    print(test_true)
 
 if __name__ == '__main__':
     main()
