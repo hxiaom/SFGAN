@@ -5,7 +5,7 @@ import tensorflow_addons as tfa
 from keras.engine.topology import Layer
 from keras.models import Sequential
 from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Flatten, Embedding, Lambda, Multiply, Concatenate, Masking
-from keras.layers import Conv1D, MaxPooling1D, Dropout, LSTM, GRU, Bidirectional, TimeDistributed, Attention, GlobalAveragePooling1D, BatchNormalization
+from keras.layers import Conv1D, MaxPooling1D, Dropout, LSTM, GRU, Bidirectional, TimeDistributed, Attention, GlobalMaxPooling1D, BatchNormalization
 from keras import initializers
 from keras import backend as K
 from keras.models import Model
@@ -83,13 +83,15 @@ class WeShModel(BaseModel):
         sentence_input = Input(shape=(self.config.data_loader.MAX_SENT_LENGTH,), dtype='int32')
         embedded_sequences = embedding_layer(sentence_input)
         l_lstm = Bidirectional(GRU(50, return_sequences=True, dropout=0.3))(embedded_sequences)
-        l_att = AttLayer(50)(l_lstm)
+        # l_att = AttLayer(50)(l_lstm)
+        l_att = GlobalMaxPooling1D()(l_lstm)
         sentEncoder = Model(sentence_input, l_att)
 
         proposal_input = Input(shape=(self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH), dtype='int32')
         review_encoder = TimeDistributed(sentEncoder)(proposal_input)
         l_lstm_sent = Bidirectional(GRU(50, return_sequences=True, dropout=0.3))(review_encoder)
-        l_att_sent = AttLayer(50)(l_lstm_sent)
+        # l_att_sent = AttLayer(50)(l_lstm_sent)
+        l_att_sent = GlobalMaxPooling1D()(l_lstm_sent)
         den = Dense(50, activation='relu')(l_att_sent)
         preds = Dense(self.n_classes, activation='sigmoid')(den)
         self.model = Model(proposal_input, preds)
