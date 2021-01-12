@@ -1,6 +1,6 @@
 {
   "exp": {
-    "name": "wesh_1"
+    "name": "wesh_lrap"
   },
   "data_loader": {
     "name": "nsfc_data_loader.NsfcDataLoader",

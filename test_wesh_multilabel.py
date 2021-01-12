@@ -71,21 +71,23 @@ def main():
     test_result = wesh_model.predict(X_test)
     
     # threshold method
-    test_result[test_result>=0.5] = 1
-    test_result[test_result<0.5] = 0
+    # test_result[test_result>=0.5] = 1
+    # test_result[test_result<0.5] = 0
 
-    y_test[y_test>=0.5] = 1
-    y_test[y_test<0.5] = 0
+    # print(test_result)
+    # print(y_test)
 
+    # argsort method
+    idxs = np.argsort(test_result, axis=1)[:,-2:]
+    test_result.fill(0)
+    for i in range(idxs.shape[0]):
+        for j in range(idxs.shape[1]):
+            test_result[i][idxs[i][j]] = 1
+    # test_true = y_test.argmax(axis=-1)
+
+    print(idxs)
     print(test_result)
     print(y_test)
-
-    # # argsort method
-    # test_result = test_result.argmax(axis=-1)
-    # idxs = np.argsort(proba)[::-1][:2]
-    # test_true = y_test.argmax(axis=-1)
-    # print(test_result)
-    # print(test_true)
 
     # Partitions Evaluation
     # Precision

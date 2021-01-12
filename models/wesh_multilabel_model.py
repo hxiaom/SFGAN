@@ -11,6 +11,8 @@ from keras import backend as K
 from keras.models import Model
 from keras.metrics import categorical_accuracy
 
+from sklearn.metrics import label_ranking_average_precision_score
+
 from time import time
 import os
 import numpy as np
@@ -96,7 +98,7 @@ class WeShModel(BaseModel):
         preds = Dense(self.n_classes, activation='sigmoid')(den)
         self.model = Model(proposal_input, preds)
         
-        self.model.compile(loss='binary_crossentropy',
+        self.model.compile(loss=label_ranking_average_precision_score,
               optimizer='adam',
               metrics=['categorical_accuracy', 
                         tf.keras.metrics.Recall(name='recall'), 
