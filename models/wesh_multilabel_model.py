@@ -2,10 +2,12 @@ from base.base_model import BaseModel
 
 import tensorflow as tf
 import tensorflow_addons as tfa
+# from tensorflow_ranking.keras.losses import ListMLELoss
+# from models.losses import plackett_luce_loss
 from keras.engine.topology import Layer
 from keras.models import Sequential
 from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Flatten, Embedding, Lambda, Multiply, Concatenate, Masking
-from keras.layers import Conv1D, MaxPooling1D, Dropout, LSTM, GRU, Bidirectional, TimeDistributed, Attention, GlobalMaxPooling1D, BatchNormalization
+from keras.layers import Conv1D, MaxPooling1D, Dropout, LSTM, GRU, Bidirectional, TimeDistributed, GlobalMaxPooling1D, BatchNormalization
 from keras import initializers
 from keras import backend as K
 from keras.models import Model
@@ -18,6 +20,20 @@ import os
 import numpy as np
 import csv
 import datetime
+
+def listmle(x, t):
+    """
+    The ListMLE loss as in Xia et al (2008), Listwise Approach to Learning to Rank - Theory and Algorithm.
+    """
+
+    # Get the ground listtruth by sorting activations by the relevance labels
+    t_hat = t[:, 0]
+    x_hat = x[tf.reverse(tf.argsort(t_hat), axis=[0])]
+    x_hat = K.cast(x_hat, tf.float32)
+
+    # Compute MLE loss
+    final = tf.reduce_logsumexp(x_hat)
+    return K.sum(final - x_hat)
 
 class AttLayer(Layer):
     def __init__(self, attention_dim):
@@ -61,9 +77,9 @@ class AttLayer(Layer):
     def compute_output_shape(self, input_shape):
         return (input_shape[0], input_shape[-1])
 
-    def get_config(self):  # https://stackoverflow.com/questions/58678836/notimplementederror-layers-with-arguments-in-init-must-override-get-conf/58680354#58680354
-        config = super().get_config().copy()
-        return config
+    # def get_config(self):  # https://stackoverflow.com/questions/58678836/notimplementederror-layers-with-arguments-in-init-must-override-get-conf/58680354#58680354
+    #     config = super().get_config().copy()
+    #     return config
 
 
 class WeShModel(BaseModel):
@@ -95,10 +111,10 @@ class WeShModel(BaseModel):
         # l_att_sent = AttLayer(50)(l_lstm_sent)
         l_att_sent = GlobalMaxPooling1D()(l_lstm_sent)
         den = Dense(50, activation='relu')(l_att_sent)
-        preds = Dense(self.n_classes, activation='sigmoid')(den)
+        preds = Dense(self.n_classes, activation='softmax')(den)
         self.model = Model(proposal_input, preds)
         
-        self.model.compile(loss=label_ranking_average_precision_score,
+        self.model.compile(loss='categorical_crossentropy',
               optimizer='adam',
               metrics=['categorical_accuracy', 
                         tf.keras.metrics.Recall(name='recall'), 

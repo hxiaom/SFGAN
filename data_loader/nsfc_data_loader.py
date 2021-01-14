@@ -337,6 +337,85 @@ class NsfcDataLoader(BaseDataLoader):
                 self.embedding_matrix[i] = embedding_vector
         return self.X_train, self.y_train, self.X_test, self.y_test, len(self.word_index), self.embedding_matrix
 
+    def get_train_data_plain_multilabel(self):
+        data_df = pd.read_csv(self.file_name, 
+                                sep='\t', 
+                                header=None, 
+                                names=['code', 'sub_code', 'abstract', 'train_or_test'])
+        data_df['sub_code'] = data_df['sub_code'].astype('str')
+        abstract_num = len(data_df)
+
+        codes = []
+        for i in range(abstract_num):
+            # print(len(sent_tokenize(data_df['abstract'][i])))
+            if data_df['sub_code'][i] == 'nan':
+                codes.append((data_df['code'][i], ))
+            else:
+                codes.append((data_df['code'][i], data_df['sub_code'][i]))
+        
+        abstracts = data_df['abstract'].tolist()
+
+        abs = []
+        code_index = []
+        
+
+        tokenizer = Tokenizer(num_words=self.config.data_loader.MAX_NB_WORDS)
+        tokenizer.fit_on_texts(abstracts)
+        # sequences = tokenizer.texts_to_sequences(abstracts)
+
+
+        data = np.zeros((abstract_num, self.config.data_loader.MAX_DOC_LENGTH), dtype='int32')
+        for i, abstract in enumerate(abstracts):
+            word_tokens = text_to_word_sequence(abstract)
+            j = 0
+            for _, word in enumerate(word_tokens):
+                if ((word in tokenizer.word_index) 
+                        and (j < self.config.data_loader.MAX_DOC_LENGTH) 
+                        and (tokenizer.word_index[word] < self.config.data_loader.MAX_NB_WORDS)):
+
+                        data[i, j] = tokenizer.word_index[word]
+                        j = j + 1
+
+        self.word_index = tokenizer.word_index
+        print('Total %s unique tokens.' % len(self.word_index))
+
+        # data = pad_sequences(sequences, maxlen=self.config.data_loader.MAX_SENTS)
+
+        # code_index = to_categorical(np.asarray(code_index))
+        one_hot = MultiLabelBinarizer()
+        code_index = one_hot.fit_transform(codes)
+        # labels = np.asarray(labels)
+        print('Shape of X tensor:', data.shape)
+        print('Shape of y tensor:', code_index.shape)
+
+        self.X_train = data[:self.split_index,:]
+        self.y_train = code_index[:self.split_index,:]
+        self.X_test = data[self.split_index:,:]
+        self.y_test = code_index[self.split_index:,:]
+
+        print('Shape of X_train tensor:', self.X_train.shape)
+        print('Shape of y_train tensor:', self.y_train.shape)
+        print('Shape of X_test tensor:', self.X_test.shape)
+        print('Shape of y_test tensor:', self.y_test.shape)
+
+        embeddings_index = {}
+        f = open('./data/glove.6B.100d.txt')
+        for line in f:
+            values = line.split()
+            word = values[0]
+            coefs = np.asarray(values[1:], dtype='float32')
+            embeddings_index[word] = coefs
+        f.close()
+
+        print('Total %s word vectors.' % len(embeddings_index))
+
+        self.embedding_matrix = np.random.random((len(self.word_index) + 1, self.config.data_loader.EMBEDDING_DIM))
+        for word, i in self.word_index.items():
+            embedding_vector = embeddings_index.get(word)
+            if embedding_vector is not None:
+                self.embedding_matrix[i] = embedding_vector
+        return self.X_train, self.y_train, self.X_test, self.y_test, len(self.word_index), self.embedding_matrix
+
     def get_train_data_tfidf(self):
         data_df = pd.read_csv(self.file_name, 
                                 sep='\t', 

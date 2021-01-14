@@ -1,4 +1,3 @@
-# version: 2020.12.20
 from comet_ml import Experiment
 experiment = Experiment(
     project_name="proposalclassification",
@@ -9,16 +8,18 @@ experiment = Experiment(
     auto_histogram_gradient_logging=True,
     auto_histogram_activation_logging=True,
 )
-experiment.add_tag('wesh')
+experiment.add_tag('textcnn')
 
 from data_loader.nsfc_data_loader import NsfcDataLoader
 
-from models.wesh_multilabel_model import WeShModel
+from models.textcnn_multilabel_model import TextCNNModel
 
-from trainers.wesh_trainer import WeShModelTrainer
+from trainers.textcnn_trainer import TextCNNModelTrainer
 
 from utils.utils import process_config, create_dirs, get_args
 from utils.utils import Logger
+
+from sklearn.metrics import precision_score, recall_score, f1_score, hamming_loss, coverage_error, label_ranking_average_precision_score, label_ranking_loss
 
 from tensorflow.python.client import device_lib
 import tensorflow as tf
@@ -26,8 +27,6 @@ import tensorflow as tf
 import datetime
 import sys
 import numpy as np
-
-from sklearn.metrics import precision_score, recall_score, f1_score, hamming_loss, coverage_error, label_ranking_average_precision_score, label_ranking_loss
 
 
 def main():
@@ -65,26 +64,20 @@ def main():
     # load NSFC data
     print('Load NSFC data')
     data_loader = NsfcDataLoader(config)
-    X_train, y_train, X_test, y_test, word_length, embedding_matrix = data_loader.get_data_multilabel()
+    X_train, y_train, X_test, y_test, word_length, embedding_matrix = data_loader.get_train_data_plain_multilabel()
     print("X_train\n", X_train)
     print("y_train\n", y_train)
 
-    # X_train, y_train, word_length, embedding_matrix = data_loader.get_train_data_whole()
-    # print("X_train\n", X_train)
-    # print("y_train\n", y_train)
-
     # create model
-    wesh_model = WeShModel(word_length, embedding_matrix, config)
-    print(wesh_model.model.summary())
+    textcnn_model = TextCNNModel(word_length, embedding_matrix, config)
+    print(textcnn_model.model.summary())
 
     # train model
-    # wesh_trainer = WeShModelTrainer(wesh_model.model, [X_train, y_train], None, config)
-    wesh_trainer = WeShModelTrainer(wesh_model.model, [X_train, y_train], [X_test, y_test], config)
-
-    wesh_trainer.train()
+    textcnn_trainer = TextCNNModelTrainer(textcnn_model.model, [X_train, y_train], [X_test, y_test], config)
+    textcnn_trainer.train()
 
     # Evaluation
-    test_result = wesh_model.model.predict(X_test)
+    test_result = textcnn_model.model.predict(X_test)
     
     # threshold method
     test_result[test_result>=0.5] = 1
