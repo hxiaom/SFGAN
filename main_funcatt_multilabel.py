@@ -32,6 +32,22 @@ import datetime
 import sys
 import numpy as np
 
+class CharVal(object):
+    def __init__(self, char, val):
+        self.char = char
+        self.val = val
+
+    def __str__(self):
+        return self.char
+
+def rgb_to_hex(rgb):
+    return '#%02x%02x%02x' % rgb
+def color_charvals(s):
+    r = 255-int(s.val*255)
+    color = rgb_to_hex((255, r, r))
+    return 'background-color: %s' % color
+
+
 
 def main():
     # capture the config and process the json configuration file
@@ -100,6 +116,23 @@ def main():
     # func_output = np.argmax(test_output, axis=2).tolist()
     # func_file.writelines(["%s\n" % item  for item in func_output])
 
+    # model = funcatt_model.model
+    # model.summary()
+    # model = Model(inputs=model.input,
+    #             outputs=[model.output, model.get_layer('attention_layer').output])
+
+    # # if you are using batches the outputs will be in batches
+    # # get exact attentions of chars
+    # an_attention_output = attention_outputs[0][-len(encoded_input_text):]
+
+    # # before the prediction i supposed you tokenized text
+    # # you need to match each char and attention
+    # char_vals = [CharVal(c, v) for c, v in zip(tokenized_text, attention_output)]
+    # import pandas as pd
+    # char_df = pd.DataFrame(char_vals).transpose()
+    # # apply coloring values
+    # char_df = char_df.style.applymap(color_charvals)
+    # char_df
 
     # Evaluation
     test_result = funcatt_model.model.predict(X_test)

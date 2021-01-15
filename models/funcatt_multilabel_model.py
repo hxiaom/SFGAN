@@ -60,11 +60,13 @@ class FuncAttModel(BaseModel):
         func_encoder = TimeDistributed(func_classification_model, name='func')(review_input) # Query
 
         att_layer = AttentionLayer(name='attention_layer')
-        query_value_attention_seq, att_states = att_layer([func_encoder, review_encoder])
+        query_value_attention_seq, att_states = att_layer([review_encoder, func_encoder])
         print('l_att_sent - output shape:', l_att_sent.shape)
         print('l_lstm_sent - output shape:', l_lstm_sent.shape)
         print('review_encoder - output shape:', review_encoder.shape)
         print('func_encoder - output shape:', func_encoder.shape)
+        print('query_value_attention_seq  - shape', query_value_attention_seq.shape)
+        print('att_states - shape', att_states.shape)
         
         # query_encoding = GlobalAveragePooling1D()(
         #     func_encoder)
