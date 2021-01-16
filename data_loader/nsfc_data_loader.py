@@ -32,7 +32,7 @@ class NsfcDataLoader(BaseDataLoader):
         # self.code_to_index = {'A':0, 'B':1, 'C':2, 'D':3, 
         #                     'E':4, 'F':5, 'G':6, 'H':7}
 
-        self.file_name = './data/A_multilabel.txt'
+        self.file_name = './data/A_multilabel_level2.txt'
         self.split_index = 7074
 
         # self.split_index = 779
