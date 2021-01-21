@@ -26,7 +26,7 @@ from tensorflow.python.client import device_lib
 import tensorflow as tf
 from keras.models import Model
 
-from sklearn.metrics import precision_score, recall_score, f1_score, hamming_loss, coverage_error, label_ranking_average_precision_score, label_ranking_loss
+from sklearn.metrics import precision_score, recall_score, f1_score, hamming_loss, coverage_error, label_ranking_average_precision_score, label_ranking_loss, average_precision_score, ndcg_score
 
 import datetime
 import sys
@@ -136,10 +136,10 @@ def main():
 
     # Evaluation
     test_result = funcatt_model.model.predict(X_test)
-    
+    test_result_label = test_result
     # threshold method
-    test_result[test_result>=0.5] = 1
-    test_result[test_result<0.5] = 0
+    test_result_label[test_result_label>=0.5] = 1
+    test_result_label[test_result_label<0.5] = 0
 
     print(test_result)
     print(y_test)
@@ -158,27 +158,29 @@ def main():
     # print(test_result)
     # print(y_test)
 
+    y_test_label = y_test
+    y_test_label[y_test_label>=0.5] = 1
     # Partitions Evaluation
     # Precision
-    precision = precision_score(y_test, test_result, average=None)
-    precision_macro = precision_score(y_test, test_result, average='macro')
+    precision = precision_score(y_test_label, test_result_label, average=None)
+    precision_macro = precision_score(y_test_label, test_result_label, average='micro')
     print('Precision:', precision_macro)
     print(precision)
 
     # Recall
-    recall = recall_score(y_test, test_result, average=None)
-    recall_macro = recall_score(y_test, test_result, average='macro')
+    recall = recall_score(y_test_label, test_result_label, average=None)
+    recall_macro = recall_score(y_test_label, test_result_label, average='micro')
     print('Recall:', recall_macro)
     print(recall)
 
     # F1_score
-    F1 = f1_score(y_test, test_result, average=None)
-    F1_macro = f1_score(y_test, test_result, average='macro')
+    F1 = f1_score(y_test_label, test_result_label, average=None)
+    F1_macro = f1_score(y_test_label, test_result_label, average='micro')
     print('F1:', F1_macro)
     print(F1)
 
     # Hamming Loss
-    hamming = hamming_loss(y_test, test_result)
+    hamming = hamming_loss(y_test_label, test_result_label)
     print('Hamming Loss:', hamming)
 
     # Rankings Evaluation
@@ -187,12 +189,16 @@ def main():
     print('Coverage Error:', coverage)
 
     # Average Precision Score
-    lrap = label_ranking_average_precision_score(y_test, test_result)
+    lrap = average_precision_score(y_test, test_result)
     print('Average Precision Score:', lrap)
 
     # Ranking Loss
     rl = label_ranking_loss(y_test, test_result)
     print('Ranking Loss:', rl)
+
+    # ndcg_score
+    ndcg = ndcg_score(y_test, test_result)
+    print('NDCG', ndcg)
 
 if __name__ == '__main__':
     main()

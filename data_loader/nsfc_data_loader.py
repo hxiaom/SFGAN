@@ -17,23 +17,26 @@ class NsfcDataLoader(BaseDataLoader):
         super(NsfcDataLoader, self).__init__(config)
         # self.file_name = './data/dataset_level2.txt'
         # self.split_index = 7807
-        # self.code_to_index = {'A0101':0, 'A0102':1, 'A0103':2, 'A0104':3, 'A0105':4,
-        #                 'A0106':5, 'A0107':6, 'A0108':7, 'A0109':8, 'A0110':9,
-        #                 'A0111':10, 'A0112':11, 'A0113':12, 'A0114':13, 'A0115':14,
-        #                 'A0116':15, 'A0117':16, 'A0201':17, 'A0202':18, 'A0203':19,
-        #                 'A0204':20, 'A0205':21, 'A0206':22, 'A0301':23, 'A0302':24,
-        #                 'A0303':25, 'A0304':26, 'A0305':27, 'A0306':28, 'A0307':29,
-        #                 'A0308':30, 'A0309':31, 'A0310':32, 'A0401':33, 'A0402':34,
-        #                 'A0403':35, 'A0404':36, 'A0405':37, 'A0501':38, 'A0502':39,
-        #                 'A0503':40, 'A0504':41, 'A0505':42, 'A0506':43, 'A0507':44}
+        self.code_to_index = {'A0101':0, 'A0102':1, 'A0103':2, 'A0104':3, 'A0105':4,
+                        'A0106':5, 'A0107':6, 'A0108':7, 'A0109':8, 'A0110':9,
+                        'A0111':10, 'A0112':11, 'A0113':12, 'A0114':13, 'A0115':14,
+                        'A0116':15, 'A0117':16, 'A0201':17, 'A0202':18, 'A0203':19,
+                        'A0204':20, 'A0205':21, 'A0206':22, 'A0301':23, 'A0302':24,
+                        'A0303':25, 'A0304':26, 'A0305':27, 'A0306':28, 'A0307':29,
+                        'A0308':30, 'A0309':31, 'A0310':32, 'A0401':33, 'A0402':34,
+                        'A0403':35, 'A0404':36, 'A0405':37, 'A0501':38, 'A0502':39,
+                        'A0503':40, 'A0504':41, 'A0505':42, 'A0506':43, 'A0507':44}
         
         # self.file_name = './data/dataset_whole_level.txt'
         # self.split_index = 77607
         # self.code_to_index = {'A':0, 'B':1, 'C':2, 'D':3, 
         #                     'E':4, 'F':5, 'G':6, 'H':7}
 
-        self.file_name = './data/A_multilabel_level2.txt'
+        self.file_name = './data/A_multilabel.txt'
         self.split_index = 7074
+
+        # self.file_name = './data/A_multilabel_level2.txt'
+        # self.split_index = 7074
 
         # self.split_index = 779
 
@@ -124,15 +127,24 @@ class NsfcDataLoader(BaseDataLoader):
         abstracts = data_df['abstract'].tolist()
 
         abstract_sents = []
-        codes = []
+        # codes = []
         
         for i in range(abstract_num):
             # print(len(sent_tokenize(data_df['abstract'][i])))
             abstract_sents.append(sent_tokenize(data_df['abstract'][i]))
+        #     if data_df['sub_code'][i] == 'nan':
+        #         codes.append((data_df['code'][i], ))
+        #     else:
+        #         codes.append((data_df['code'][i], data_df['sub_code'][i]))
+        
+        main_code_index = []
+        sub_code_index = []
+        for i in range(abstract_num):
+            main_code_index.append(self.code_to_index[data_df['code'][i]])
             if data_df['sub_code'][i] == 'nan':
-                codes.append((data_df['code'][i], ))
+                sub_code_index.append('45')
             else:
-                codes.append((data_df['code'][i], data_df['sub_code'][i]))
+                sub_code_index.append(self.code_to_index[data_df['sub_code'][i]])
 
         tokenizer = Tokenizer(num_words=self.config.data_loader.MAX_NB_WORDS)
         tokenizer.fit_on_texts(abstracts)
@@ -158,13 +170,22 @@ class NsfcDataLoader(BaseDataLoader):
 
         # data = pad_sequences(sequences, maxlen=self.config.data_loader.MAX_SENTS)
 
-        one_hot = MultiLabelBinarizer()
-        code_index = one_hot.fit_transform(codes)
+        main_code_index = to_categorical(np.asarray(main_code_index), num_classes=45)
+        sub_code_index = to_categorical(np.asarray(sub_code_index), num_classes=46)
+        sub_code_index = sub_code_index[:,:-1]
+        sub_code_index = np.where(sub_code_index==1, 0.8, 0)
+        print('sub index', sub_code_index)
+        code_index = np.add(main_code_index, sub_code_index)
+        print('code index', code_index)
+        code_index[np.where(code_index >1)] = 1
+        print('code index', code_index)
+        # one_hot = MultiLabelBinarizer()
+        # code_index = one_hot.fit_transform(codes)
 
         # labels = np.asarray(labels)
         print('Shape of X tensor:', data.shape)
         print('Shape of y tensor:', code_index.shape)
-        print('class name:', one_hot.classes_)
+        # print('class name:', one_hot.classes_)
 
         self.X_train = data[:self.split_index,:]
         self.y_train = code_index[:self.split_index,:]
@@ -345,13 +366,22 @@ class NsfcDataLoader(BaseDataLoader):
         data_df['sub_code'] = data_df['sub_code'].astype('str')
         abstract_num = len(data_df)
 
-        codes = []
+        # codes = []
+        # for i in range(abstract_num):
+        #     # print(len(sent_tokenize(data_df['abstract'][i])))
+        #     if data_df['sub_code'][i] == 'nan':
+        #         codes.append((data_df['code'][i], ))
+        #     else:
+        #         codes.append((data_df['code'][i], data_df['sub_code'][i]))
+
+        main_code_index = []
+        sub_code_index = []
         for i in range(abstract_num):
-            # print(len(sent_tokenize(data_df['abstract'][i])))
+            main_code_index.append(self.code_to_index[data_df['code'][i]])
             if data_df['sub_code'][i] == 'nan':
-                codes.append((data_df['code'][i], ))
+                sub_code_index.append('45')
             else:
-                codes.append((data_df['code'][i], data_df['sub_code'][i]))
+                sub_code_index.append(self.code_to_index[data_df['sub_code'][i]])
         
         abstracts = data_df['abstract'].tolist()
 
@@ -381,9 +411,17 @@ class NsfcDataLoader(BaseDataLoader):
 
         # data = pad_sequences(sequences, maxlen=self.config.data_loader.MAX_SENTS)
 
-        # code_index = to_categorical(np.asarray(code_index))
-        one_hot = MultiLabelBinarizer()
-        code_index = one_hot.fit_transform(codes)
+        main_code_index = to_categorical(np.asarray(main_code_index), num_classes=45)
+        sub_code_index = to_categorical(np.asarray(sub_code_index), num_classes=46)
+        sub_code_index = sub_code_index[:,:-1]
+        sub_code_index = np.where(sub_code_index==1, 0.8, 0)
+        print('sub index', sub_code_index)
+        code_index = np.add(main_code_index, sub_code_index)
+        print('code index', code_index)
+        code_index[np.where(code_index >1)] = 1
+        print('code index', code_index)
+        # one_hot = MultiLabelBinarizer()
+        # code_index = one_hot.fit_transform(codes)
         # labels = np.asarray(labels)
         print('Shape of X tensor:', data.shape)
         print('Shape of y tensor:', code_index.shape)

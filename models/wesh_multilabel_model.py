@@ -85,7 +85,7 @@ class AttLayer(Layer):
 class WeShModel(BaseModel):
     def __init__(self, word_length, embedding_matrix, configs):
         super(WeShModel, self).__init__(configs)
-        self.n_classes = 5
+        self.n_classes = 45
         self.build_model(word_length, embedding_matrix)
 
     def build_model(self, word_length, embedding_matrix):
@@ -111,10 +111,10 @@ class WeShModel(BaseModel):
         # l_att_sent = AttLayer(50)(l_lstm_sent)
         l_att_sent = GlobalMaxPooling1D()(l_lstm_sent)
         den = Dense(50, activation='relu')(l_att_sent)
-        preds = Dense(self.n_classes, activation='softmax')(den)
+        preds = Dense(self.n_classes, activation='sigmoid')(den)
         self.model = Model(proposal_input, preds)
         
-        self.model.compile(loss='categorical_crossentropy',
+        self.model.compile(loss='binary_crossentropy',
               optimizer='adam',
               metrics=['categorical_accuracy', 
                         tf.keras.metrics.Recall(name='recall'), 
