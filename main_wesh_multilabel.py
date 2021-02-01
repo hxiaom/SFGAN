@@ -27,14 +27,14 @@ import datetime
 import sys
 import numpy as np
 
-from sklearn.metrics import precision_score, recall_score, f1_score, hamming_loss, coverage_error, label_ranking_average_precision_score, label_ranking_loss, average_precision_score, ndcg_score
+from sklearn.metrics import classification_report, precision_score, recall_score, f1_score, hamming_loss, coverage_error, label_ranking_average_precision_score, label_ranking_loss, average_precision_score, ndcg_score
 
 
 def main():
     # capture the config and process the json configuration file
     try:
         args = get_args()
-        config = process_config(args.config)
+        config = process_config(args)
     except:
         print("missing or invalid arguments")
         exit(0)
@@ -109,22 +109,28 @@ def main():
 
     y_test_label = y_test
     y_test_label[y_test_label>=0.5] = 1
+
+    cr = classification_report(y_test_label, test_result_label)
+    print('cr', cr)
     # Partitions Evaluation
     # Precision
     precision = precision_score(y_test_label, test_result_label, average=None)
     precision_macro = precision_score(y_test_label, test_result_label, average='micro')
+    print('Precision:', precision)
     print('Precision:', precision_macro)
     print(precision)
 
     # Recall
     recall = recall_score(y_test_label, test_result_label, average=None)
     recall_macro = recall_score(y_test_label, test_result_label, average='micro')
+    print('Recall:', recall)
     print('Recall:', recall_macro)
     print(recall)
 
     # F1_score
     F1 = f1_score(y_test_label, test_result_label, average=None)
     F1_macro = f1_score(y_test_label, test_result_label, average='micro')
+    print('F1:', F1)
     print('F1:', F1_macro)
     print(F1)
 

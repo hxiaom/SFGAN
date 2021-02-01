@@ -1,6 +1,7 @@
 data/label_hier copy.txt
 data/glove*
 data/*
+data_loader/__pycache__/*
 experiments
 data/data_processor.py
 dataset_statistics

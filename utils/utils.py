@@ -23,10 +23,12 @@ def get_config_from_json(json_file):
     return config, config_dict
 
 
-def process_config(json_file):
-    config, _ = get_config_from_json(json_file)
+def process_config(args):
+    config, _ = get_config_from_json(args.config)
+    config.exp.name = args.name
     config.callbacks.log_dir = os.path.join("experiments", time.strftime("%Y-%m-%d/",time.localtime()), config.exp.name, "logs/")
     config.callbacks.checkpoint_dir = os.path.join("experiments", time.strftime("%Y-%m-%d/",time.localtime()), config.exp.name, "checkpoints/")
+
     print(config)
     return config
 
@@ -53,6 +55,12 @@ def get_args():
         '-c', '--config',
         dest='config',
         metavar='C',
+        default='None',
+        help='The Configuration file')
+    argparser.add_argument(
+        '-n', '--name',
+        dest='name',
+        metavar='N',
         default='None',
         help='The Configuration file')
     args = argparser.parse_args()

@@ -32,7 +32,7 @@ def main():
     # capture the config and process the json configuration file
     try:
         args = get_args()
-        config = process_config(args.config)
+        config = process_config(args)
     except:
         print("missing or invalid arguments")
         exit(0)
