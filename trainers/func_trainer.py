@@ -38,8 +38,8 @@ class FuncModelTrainer(BaseTrain):
             self.data_train[0], self.data_train[1],
             epochs=self.config.func_trainer.num_epochs,
             # verbose=self.config.trainer.verbose_training,
-            batch_size=self.config.func_trainer.batch_size,
-            validation_split=self.config.func_trainer.validation_split,
+            batch_size=self.config.trainer.batch_size,
+            validation_split=self.config.trainer.validation_split,
             # callbacks=self.callbacks,
         )
         self.loss.extend(history.history['loss'])
