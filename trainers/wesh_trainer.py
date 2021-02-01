@@ -1,6 +1,6 @@
 from base.base_trainer import BaseTrain
 import os
-from keras.callbacks import ModelCheckpoint, TensorBoard
+from keras.callbacks import Callback, ModelCheckpoint, TensorBoard, EarlyStopping
 from sklearn.utils import class_weight
 import numpy as np
 
@@ -49,7 +49,7 @@ class WeShModelTrainer(BaseTrain):
             batch_size=self.config.trainer.batch_size,
             validation_data = (self.data_test[0], self.data_test[1]),
             # validation_split=self.config.trainer.validation_split,
-            # callbacks=self.callbacks,
+            callbacks=self.callbacks,
         )
         self.loss.extend(history.history['loss'])
         self.acc.extend(history.history['categorical_accuracy'])

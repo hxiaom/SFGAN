@@ -25,12 +25,12 @@ class FuncModelTrainer(BaseTrain):
             )
         )
 
-        self.callbacks.append(
-            TensorBoard(
-                log_dir=self.config.callbacks.tensorboard_log_dir,
-                write_graph=self.config.callbacks.tensorboard_write_graph,
-            )
-        )
+        # self.callbacks.append(
+        #     TensorBoard(
+        #         log_dir=self.config.callbacks.tensorboard_log_dir,
+        #         write_graph=self.config.callbacks.tensorboard_write_graph,
+        #     )
+        # )
 
 
     def train(self):
@@ -40,7 +40,7 @@ class FuncModelTrainer(BaseTrain):
             # verbose=self.config.trainer.verbose_training,
             batch_size=self.config.trainer.batch_size,
             validation_split=self.config.trainer.validation_split,
-            # callbacks=self.callbacks,
+            callbacks=self.callbacks,
         )
         self.loss.extend(history.history['loss'])
         self.acc.extend(history.history['acc'])
