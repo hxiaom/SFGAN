@@ -13,21 +13,9 @@
   "model":{
     "name": "sfgan_model.SfganModel"
   },
-  "func_trainer":{
-    "name": "sfgan_trainer.FuncModelTrainer",
-    "num_epochs": 5,
-    "batch_size": 64,
-    "validation_split": 0.2
-  },
-  "local_trainer":{
+  "trainer":{
     "name": "sfgan_trainer.LocalModelTrainer",
     "num_epochs": 20,
-    "batch_size": 64,
-    "validation_split": 0.2
-  },
-  "global_trainer":{
-    "name": "sfgan_trainer.GlobalModelTrainer",
-    "num_epochs": 200,
     "batch_size": 64,
     "validation_split": 0.2
   },

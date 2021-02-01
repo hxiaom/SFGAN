@@ -34,11 +34,11 @@ class TextCNNModelTrainer(BaseTrain):
     def train(self):
         history = self.model.fit(
             self.data_train[0], self.data_train[1],
-            epochs=self.config.local_trainer.num_epochs,
+            epochs=self.config.trainer.num_epochs,
             # verbose=self.config.trainer.verbose_training,
-            batch_size=self.config.local_trainer.batch_size,
+            batch_size=self.config.trainer.batch_size,
             # validation_data = (self.data_test[0], self.data_test[1])
-            # validation_split=self.config.local_trainer.validation_split,
+            # validation_split=self.config.trainer.validation_split,
             # callbacks=self.callbacks,
         )
         # self.loss.extend(history.history['loss'])
