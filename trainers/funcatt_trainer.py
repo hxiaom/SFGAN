@@ -38,7 +38,7 @@ class FuncAttModelTrainer(BaseTrain):
             epochs=self.config.trainer.num_epochs,
             # verbose=self.config.trainer.verbose_training,
             batch_size=self.config.trainer.batch_size,
-            validation_data = (self.data_test[0], self.data_test[1])
+            validation_data = (self.data_test[0], self.data_test[1]),
             # validation_split=self.config.trainer.validation_split,
             callbacks=self.callbacks,
         )

@@ -1,16 +1,11 @@
-data/label_hier copy.txt
-data/glove*
 data/*
-data_loader/__pycache__/*
+__pycache__/*
+*.pyc
+*.pyo
 experiments
 data/data_processor.py
 dataset_statistics
 test.py
 notes.md
-data/functionality/dev_pubmed.txt
-data/functionality/preprocess.py
-data/functionality/test_pubmed.txt
-data/functionality/train_pubmed.txt
-data/functionality/dev_pubmed.jsonl
-data/functionality/test_pubmed.jsonl
-data/functionality/train_pubmed.jsonl
+SFGAN.zip
+cuda-repo-ubuntu2004-11-1-local_11.1.0-455.23.05-1_amd64.deb

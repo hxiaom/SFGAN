@@ -9,7 +9,7 @@ from keras.models import Model
 class TextCNNModel(BaseModel):
     def __init__(self, word_length, embedding_matrix, configs):
         super(TextCNNModel, self).__init__(configs)
-        self.num_classes = 45
+        self.num_classes = 5
         self.build_model(word_length, embedding_matrix)
 
     def build_model(self, word_length, embedding_matrix):

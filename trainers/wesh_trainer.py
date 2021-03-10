@@ -29,7 +29,7 @@ class WeShModelTrainer(BaseTrain):
         # self.callbacks.append(
         #     TensorBoard(
         #         log_dir=self.config.callbacks.tensorboard_log_dir,  # not setting
-        #         write_graph=self.config.callbacks.tensorboard_write_graph,
+        #         # write_graph=self.config.callbacks.tensorboard_write_graph,
         #     )
         # )
 
