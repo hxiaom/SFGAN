@@ -9,3 +9,6 @@ test.py
 notes.md
 SFGAN.zip
 cuda-repo-ubuntu2004-11-1-local_11.1.0-455.23.05-1_amd64.deb
+scibert/data/*
+scibert/scibert_scivocab_uncased/*
+scibert/scibert_scivocab_uncased.tar
