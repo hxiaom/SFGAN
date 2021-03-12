@@ -8,14 +8,14 @@
     "MAX_DOC_LENGTH": 300,
     "MAX_SENTS": 18,
     "MAX_NB_WORDS": 100000,
-    "EMBEDDING_DIM": 100
+    "EMBEDDING_DIM": 300
   },
   "model":{
     "name": "sfgan_model.SfganModel"
   },
   "trainer":{
     "name": "sfgan_trainer.LocalModelTrainer",
-    "num_epochs": 20,
+    "num_epochs": 50,
     "batch_size": 64,
     "validation_split": 0.2
   },

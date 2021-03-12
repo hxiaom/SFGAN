@@ -85,7 +85,7 @@ class AttLayer(Layer):
 class WeShModel(BaseModel):
     def __init__(self, word_length, embedding_matrix, configs):
         super(WeShModel, self).__init__(configs)
-        self.n_classes = 5
+        self.n_classes = 96
         self.build_model(word_length, embedding_matrix)
 
     def build_model(self, word_length, embedding_matrix):

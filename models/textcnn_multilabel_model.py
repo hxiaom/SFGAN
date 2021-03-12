@@ -5,11 +5,12 @@ import tensorflow_addons as tfa
 from keras.layers import Input, Dense, Conv1D, MaxPooling2D, Dropout, Flatten, Embedding, Lambda, Multiply, Concatenate, Masking
 from keras.layers import Conv1D, MaxPooling1D, Dropout, LSTM, GRU, Bidirectional, TimeDistributed, Attention, GlobalAveragePooling1D, BatchNormalization
 from keras.models import Model
+from tensorflow.keras import regularizers
 
 class TextCNNModel(BaseModel):
     def __init__(self, word_length, embedding_matrix, configs):
         super(TextCNNModel, self).__init__(configs)
-        self.num_classes = 5
+        self.num_classes = 96
         self.build_model(word_length, embedding_matrix)
 
     def build_model(self, word_length, embedding_matrix):
@@ -38,14 +39,16 @@ class TextCNNModel(BaseModel):
                         padding='valid',
                         strides=1,
                         kernel_initializer='he_uniform',
-                        activation='relu')(embedded_docs)
+                        activation='relu',
+                        kernel_regularizer=regularizers.l2(1e-4))(embedded_docs)
             pool = MaxPooling1D(pool_size=self.config.data_loader.MAX_DOC_LENGTH - kernel + 1)(conv)
             pooled.append(pool)
 
         merged = Concatenate(axis=-1)(pooled)
         flatten = Flatten()(merged)
-        drop = Dropout(rate=dropout_rate)(flatten)
-        x_output = Dense(self.num_classes, activation='sigmoid')(drop)
+        # drop = Dropout(rate=dropout_rate)(flatten)
+        # x_output = Dense(self.num_classes, activation='sigmoid')(drop)
+        x_output = Dense(self.num_classes, activation='sigmoid', kernel_regularizer=regularizers.l2(1e-4))(flatten)
 
         self.model = Model(inputs=docs_input, outputs=x_output)
         self.model.compile(loss='binary_crossentropy',

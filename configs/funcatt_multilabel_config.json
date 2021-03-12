@@ -8,7 +8,7 @@
     "MAX_DOC_LENGTH": 300,
     "MAX_SENTS": 18,
     "MAX_NB_WORDS": 100000,
-    "EMBEDDING_DIM": 100
+    "EMBEDDING_DIM": 300
   },
   "model":{
     "name": "funcatt_model.FuncAttModel"
