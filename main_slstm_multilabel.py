@@ -8,12 +8,12 @@ experiment = Experiment(
     auto_histogram_weight_logging=True,
     auto_histogram_gradient_logging=True,
     auto_histogram_activation_logging=True,
-)
+
 experiment.add_tag('wesh')
 
 from data_loader.nsfc_data_loader import NsfcDataLoader
 
-from models.wesh_multilabel_model import WeShModel
+from models.slstm_multilabel_model import WeShModel
 
 from trainers.wesh_trainer import WeShModelTrainer
 
