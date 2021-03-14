@@ -6,20 +6,18 @@ import tensorflow_addons as tfa
 # from models.losses import plackett_luce_loss
 from keras.engine.topology import Layer
 from keras.models import Sequential
-from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Flatten, Embedding, Lambda, Multiply, Concatenate, Masking
-from keras.layers import Conv1D, MaxPooling1D, Dropout, LSTM, GRU, Bidirectional, TimeDistributed, GlobalMaxPooling1D, BatchNormalization
+from keras.layers import Input, Dense, Dropout, Flatten, Embedding, Masking
+from keras.layers import LSTM, GRU, Bidirectional, TimeDistributed
+from keras.layers import GlobalMaxPooling1D
 from keras import initializers
 from keras import backend as K
 from keras.models import Model
 from keras.metrics import categorical_accuracy
-
 from sklearn.metrics import label_ranking_average_precision_score
 
 from time import time
 import os
 import numpy as np
-import csv
-import datetime
 
 def listmle(x, t):
     """

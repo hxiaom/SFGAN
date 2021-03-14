@@ -3,9 +3,9 @@ from base.base_model import BaseModel
 import tensorflow as tf
 import tensorflow_addons as tfa
 from keras.engine.topology import Layer
-from keras.models import Sequential
-from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Flatten, Embedding, Lambda, Multiply, Concatenate, Masking
-from keras.layers import Conv1D, MaxPooling1D, Dropout, LSTM, GRU, Bidirectional, TimeDistributed, Attention, GlobalAveragePooling1D, GlobalMaxPooling1D, BatchNormalization
+from keras.layers import Input, Dense, Dropout, Flatten, Embedding, Concatenate
+from keras.layers import MaxPooling1D, LSTM, GRU, Bidirectional, TimeDistributed
+from keras.layers import Attention, GlobalAveragePooling1D, GlobalMaxPooling1D
 from keras.layers import AdditiveAttention
 from keras import initializers
 from keras import backend as K
@@ -15,9 +15,6 @@ from models.attention import AttentionLayer
 from time import time
 import os
 import numpy as np
-import csv
-import datetime
-
 
 class FuncAttModel(BaseModel):
     def __init__(self, word_length, embedding_matrix, func_model, configs):

@@ -4,8 +4,8 @@ import tensorflow as tf
 import tensorflow_addons as tfa
 from keras.engine.topology import Layer
 from keras.models import Sequential
-from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Flatten, Embedding, Lambda, Multiply, Concatenate, Masking
-from keras.layers import Conv1D, MaxPooling1D, Dropout, LSTM, GRU, Bidirectional, TimeDistributed, Attention, GlobalAveragePooling1D, BatchNormalization
+from keras.layers import Input, Dense, Dropout, Flatten, Embedding, Masking
+from keras.layers import LSTM, GRU, Bidirectional, TimeDistributed, Attention
 from keras import initializers
 from keras import backend as K
 from keras.models import Model
@@ -13,8 +13,6 @@ from keras.models import Model
 from time import time
 import os
 import numpy as np
-import csv
-import datetime
 
 class AttLayer(Layer):
     def __init__(self, attention_dim):
@@ -59,9 +57,9 @@ class AttLayer(Layer):
         return (input_shape[0], input_shape[-1])
 
 
-class WeShModel(BaseModel):
+class SLSTMModel(BaseModel):
     def __init__(self, word_length, embedding_matrix, configs):
-        super(WeShModel, self).__init__(configs)
+        super(SLSTMModel, self).__init__(configs)
         self.n_classes = 8
         self.build_model(word_length, embedding_matrix)
 

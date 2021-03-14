@@ -2,8 +2,8 @@ from base.base_model import BaseModel
 
 import tensorflow as tf
 import tensorflow_addons as tfa
-from keras.layers import Input, Dense, Conv1D, MaxPooling2D, Dropout, Flatten, Embedding, Lambda, Multiply, Concatenate, Masking
-from keras.layers import Conv1D, MaxPooling1D, Dropout, LSTM, GRU, Bidirectional, TimeDistributed, Attention, GlobalAveragePooling1D, BatchNormalization
+from keras.layers import Input, Dense, Dropout, Flatten, Embedding
+from keras.layers import Conv1D, MaxPooling1D, Concatenate
 from keras.models import Model
 
 class TextCNNModel(BaseModel):

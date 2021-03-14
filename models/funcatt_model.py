@@ -4,8 +4,9 @@ import tensorflow as tf
 import tensorflow_addons as tfa
 from keras.engine.topology import Layer
 from keras.models import Sequential
-from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Flatten, Embedding, Lambda, Multiply, Concatenate, Masking
-from keras.layers import Conv1D, MaxPooling1D, Dropout, LSTM, GRU, Bidirectional, TimeDistributed, Attention, GlobalAveragePooling1D, BatchNormalization
+from keras.layers import Input, Dense, Dropout, Flatten, Embedding
+from keras.layers import Concatenate, Masking, LSTM, GRU, Bidirectional
+from keras.layers import TimeDistributed, Attention, GlobalAveragePooling1D
 from keras.layers import AdditiveAttention
 from keras import initializers
 from keras import backend as K
@@ -14,8 +15,6 @@ from keras.models import Model
 from time import time
 import os
 import numpy as np
-import csv
-import datetime
 
 class AttLayer(Layer):
     def __init__(self, attention_dim):

@@ -3,8 +3,9 @@ from base.base_model import BaseModel
 import tensorflow as tf
 from keras.engine.topology import Layer
 from keras.models import Sequential
-from keras.layers import Input, Dense, Conv2D, MaxPooling2D, Dropout, Flatten, Embedding, Lambda, Multiply, Concatenate, Masking
-from keras.layers import Conv1D, MaxPooling1D, Dropout, LSTM, GRU, Bidirectional, TimeDistributed, Attention, GlobalAveragePooling1D
+from keras.layers import Input, Dense, Flatten, Embedding, Lambda, Multiply
+from keras.layers import Concatenate, Masking, LSTM, GRU, Bidirectional
+from keras.layers import TimeDistributed, Attention, GlobalAveragePooling1D
 from keras import initializers
 from keras import backend as K
 from keras.models import Model
@@ -12,7 +13,6 @@ from keras.models import Model
 from time import time
 import os
 import numpy as np
-import csv
 import datetime
 
 
@@ -61,7 +61,7 @@ class AttLayer(Layer):
 class NsfcHierModel(BaseModel):
     def __init__(self, configs):
         super(NsfcHierModel, self).__init__(configs)
-        self.model = []
+        self.model = []datetime
         # self.input_shape = (self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH)
         self.x = Input(shape=(self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH), dtype='int32')
 
