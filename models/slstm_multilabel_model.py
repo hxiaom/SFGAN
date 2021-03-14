@@ -80,9 +80,9 @@ class AttLayer(Layer):
     #     return config
 
 
-class WeShModel(BaseModel):
+class SLSTMModel(BaseModel):
     def __init__(self, word_length, embedding_matrix, configs):
-        super(WeShModel, self).__init__(configs)
+        super(SLSTMModel, self).__init__(configs)
         self.n_classes = 96
         self.build_model(word_length, embedding_matrix)
 
