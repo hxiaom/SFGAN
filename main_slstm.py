@@ -1,4 +1,3 @@
-# version: 2020.12.20
 from comet_ml import Experiment
 experiment = Experiment(
     project_name="proposalclassification",
@@ -12,11 +11,8 @@ experiment = Experiment(
 experiment.add_tag('wesh')
 
 from data_loader.nsfc_data_loader import NsfcDataLoader
-
-from models.wesh_model import WeShModel
-
-from trainers.wesh_trainer import WeShModelTrainer
-
+from models.slstm_model import WeShModel
+from trainers.slstm_trainer import SLSTMModelTrainer
 from utils.utils import process_config, create_dirs, get_args
 from utils.utils import Logger
 

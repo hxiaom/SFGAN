@@ -11,11 +11,8 @@ experiment = Experiment(
 experiment.add_tag('textcnn')
 
 from data_loader.nsfc_data_loader import NsfcDataLoader
-
 from models.textcnn_model import TextCNNModel
-
 from trainers.textcnn_trainer import TextCNNModelTrainer
-
 from utils.utils import process_config, create_dirs, get_args
 from utils.utils import Logger
 

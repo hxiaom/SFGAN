@@ -1,4 +1,3 @@
-# version: 2020.12.20
 from comet_ml import Experiment
 experiment = Experiment(
     project_name="proposalclassification",
@@ -12,11 +11,8 @@ experiment = Experiment(
 experiment.add_tag('func')
 
 from data_loader.functionality_data_loader import FunctionalityDataLoader
-
 from models.func_model import FuncModel
-
 from trainers.func_trainer import FuncModelTrainer
-
 from utils.utils import process_config, create_dirs, get_args
 from utils.utils import Logger
 

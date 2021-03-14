@@ -1,4 +1,3 @@
-# version: 2020.12.20
 from comet_ml import Experiment
 experiment = Experiment(
     project_name="proposalclassification",
@@ -12,24 +11,21 @@ experiment = Experiment(
 experiment.add_tag('wesh')
 
 from data_loader.nsfc_data_loader import NsfcDataLoader
-
-from models.slstm_multilabel_model import WeShModel
-
-from trainers.wesh_trainer import WeShModelTrainer
-
+from models.slstm_multilabel_model import SLSTMModel
+from trainers.slstm_multilabel_trainer import SLSTMModelTrainer
 from utils.utils import process_config, create_dirs, get_args
 from utils.utils import Logger
 
 from tensorflow.python.client import device_lib
 import tensorflow as tf
+from sklearn.metrics import precision_score, recall_score, f1_score
+from sklearn.metrics import hamming_loss, coverage_error, ndcg_score
+from sklearn.metrics import label_ranking_average_precision_score
+from sklearn.metrics import label_ranking_loss, average_precision_score 
 
 import datetime
 import sys
 import numpy as np
-
-from sklearn.metrics import classification_report, precision_score, recall_score
-from sklearn.metrics import f1_score, hamming_loss, coverage_error, label_ranking_average_precision_score
-from sklearn.metrics import label_ranking_loss, average_precision_score, ndcg_score
 
 
 def main():

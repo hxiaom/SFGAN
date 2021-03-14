@@ -1,4 +1,3 @@
-# version: 2020.12.20
 from comet_ml import Experiment
 experiment = Experiment(
     project_name="proposalclassification",
@@ -12,8 +11,6 @@ experiment = Experiment(
 experiment.add_tag('svm')
 
 from data_loader.nsfc_data_loader import NsfcDataLoader
-
-
 from utils.utils import process_config, create_dirs, get_args
 from utils.utils import Logger
 
@@ -21,8 +18,6 @@ from tensorflow.python.client import device_lib
 import tensorflow as tf
 from sklearn.svm import SVC
 from sklearn.metrics import classification_report
-
-
 
 import datetime
 import sys

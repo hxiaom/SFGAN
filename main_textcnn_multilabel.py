@@ -12,7 +12,7 @@ experiment.add_tag('textcnn')
 
 from data_loader.nsfc_data_loader import NsfcDataLoader
 from models.textcnn_multilabel_model import TextCNNModel
-from trainers.textcnn_trainer import TextCNNModelTrainer
+from trainers.textcnn_multilabel_trainer import TextCNNModelTrainer
 from utils.utils import process_config, create_dirs, get_args
 from utils.utils import Logger
 
@@ -20,7 +20,6 @@ from sklearn.metrics import classification_report, precision_score
 from sklearn.metrics import recall_score, f1_score, hamming_loss, coverage_error
 from sklearn.metrics import label_ranking_average_precision_score
 from sklearn.metrics import label_ranking_loss, average_precision_score, ndcg_score
-
 from tensorflow.python.client import device_lib
 import tensorflow as tf
 

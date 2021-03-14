@@ -1,4 +1,3 @@
-# version: 2020.12.20
 from comet_ml import Experiment
 experiment = Experiment(
     project_name="proposalclassification",
@@ -13,12 +12,9 @@ experiment.add_tag('funcatt')
 
 from data_loader.nsfc_data_loader import NsfcDataLoader
 from data_loader.functionality_data_loader import FunctionalityDataLoader
-
 from models.func_model import FuncModel
 from models.funcatt_multilabel_model import FuncAttModel
-
 from trainers.funcatt_trainer import FuncAttModelTrainer
-
 from utils.utils import process_config, create_dirs, get_args
 from utils.utils import Logger
 
@@ -26,7 +22,10 @@ from tensorflow.python.client import device_lib
 import tensorflow as tf
 from keras.models import Model
 
-from sklearn.metrics import precision_score, recall_score, f1_score, hamming_loss, coverage_error, label_ranking_average_precision_score, label_ranking_loss, average_precision_score, ndcg_score
+from sklearn.metrics import precision_score, recall_score, f1_score
+from sklearn.metrics import hamming_loss, coverage_error, ndcg_score
+from sklearn.metrics import label_ranking_average_precision_score
+from sklearn.metrics import label_ranking_loss, average_precision_score 
 
 import datetime
 import sys
@@ -95,7 +94,8 @@ def main():
     func_model.load_model()
     print(func_model.model.summary())
 
-    # create model
+    # create# version: 2020.12.20
+ model
     funcatt_model = FuncAttModel(word_length, embedding_matrix, func_model.model, config)
     print(funcatt_model.model.summary())
 
@@ -163,7 +163,8 @@ def main():
     # Partitions Evaluation
     # Precision
     precision = precision_score(y_test_label, test_result_label, average=None)
-    precision_macro = precision_score(y_test_label, test_result_label, average='micro')
+    precisio# version: 2020.12.20
+n_macro = precision_score(y_test_label, test_result_label, average='micro')
     print('Precision:', precision_macro)
     print(precision)
 

@@ -1,4 +1,3 @@
-# version: 2020.12.20
 from comet_ml import Experiment
 experiment = Experiment(
     project_name="proposalclassification",
@@ -13,12 +12,9 @@ experiment.add_tag('funcatt')
 
 from data_loader.nsfc_data_loader import NsfcDataLoader
 from data_loader.functionality_data_loader import FunctionalityDataLoader
-
 from models.func_model import FuncModel
 from models.funcatt_model import FuncAttModel
-
 from trainers.funcatt_trainer import FuncAttModelTrainer
-
 from utils.utils import process_config, create_dirs, get_args
 from utils.utils import Logger
 
