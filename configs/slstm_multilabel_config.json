@@ -6,8 +6,8 @@
     "name": "nsfc_data_loader.NsfcDataLoader",
     "MAX_SENT_LENGTH": 30,
     "MAX_SENTS": 18,
-    "MAX_NB_WORDS": 100000,
-    "EMBEDDING_DIM": 100
+    // "MAX_NB_WORDS": 100000,
+    "EMBEDDING_DIM": 300
   },
   "model":{
     "name": "wesh_model.WeShModel"
@@ -19,10 +19,11 @@
     "validation_split": 0.282
   },
   "callbacks":{
+    "checkpoint_dir": "",
     "checkpoint_monitor": "val_loss",
     "checkpoint_mode": "min",
     "checkpoint_save_best_only": true,
-    "checkpoint_save_weights_only": true,
+    "checkpoint_save_weights_only": false,
     "checkpoint_verbose": true,
     "tensorboard_write_graph": true
   }

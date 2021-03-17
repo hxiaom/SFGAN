@@ -85,19 +85,37 @@ class NsfcDataLoader(BaseDataLoader):
         self.word_index = tokenizer.word_index
         print('Total %s unique tokens.' % len(self.word_index))
 
+        sent_len_list = []
+        sent_num_list = []
         data = np.zeros((len(data_df), self.config.data_loader.MAX_SENTS, self.config.data_loader.MAX_SENT_LENGTH), dtype='int32')
         for i, abstract in enumerate(abstract_sents):
+            sent_num = 0
             for j, sent in enumerate(abstract):
+                word_tokens = text_to_word_sequence(sent)
+                sent_len_list.append(len(word_tokens))
+                sent_num = sent_num + 1
                 if j < self.config.data_loader.MAX_SENTS:
-                    word_tokens = text_to_word_sequence(sent)
                     k = 0
                     for _, word in enumerate(word_tokens):
                         if ((word in tokenizer.word_index) 
-                                and (k < self.config.data_loader.MAX_SENT_LENGTH) 
-                                and (tokenizer.word_index[word] < self.config.data_loader.MAX_NB_WORDS)):
+                                and (k < self.config.data_loader.MAX_SENT_LENGTH)):
+                                # and (tokenizer.word_index[word] < self.config.data_loader.MAX_NB_WORDS)):  # delete maximum number of token.
 
                                 data[i, j, k] = tokenizer.word_index[word]
                                 k = k + 1
+            sent_num_list.append(sent_num)
+        sent_num_arr = np.array(sent_num_list)
+        print("sentence number 0.5 quantile", np.quantile(sent_num_arr, 0.5))
+        print("sentence number 0.9 quantile", np.quantile(sent_num_arr, 0.9))
+        print("sentence number 0.99 quantile", np.quantile(sent_num_arr, 0.99))
+        print("sentence number 1.0 quantile", np.quantile(sent_num_arr, 1))
+
+        sent_len_arr = np.array(sent_len_list)
+        print("sentence length 0.5 quantile", np.quantile(sent_len_arr, 0.5))
+        print("sentence length 0.9 quantile", np.quantile(sent_len_arr, 0.9))
+        print("sentence length 0.99 quantile", np.quantile(sent_len_arr, 0.99))
+        print("sentence length 1.0 quantile", np.quantile(sent_len_arr, 1))
+
         code_index = to_categorical(np.asarray(code_index))
         self.X_train = data[:self.split_index,:]
         self.y_train = code_index[:self.split_index,:]
@@ -159,8 +177,9 @@ class NsfcDataLoader(BaseDataLoader):
                     k = 0
                     for _, word in enumerate(word_tokens):
                         if ((word in tokenizer.word_index) 
-                                and (k < self.config.data_loader.MAX_SENT_LENGTH) 
-                                and (tokenizer.word_index[word] < self.config.data_loader.MAX_NB_WORDS)):
+                                and (k < self.config.data_loader.MAX_SENT_LENGTH)):
+                                # delete maximum number of token.
+                                # and (tokenizer.word_index[word] < self.config.data_loader.MAX_NB_WORDS)):  
                                 data[i, j, k] = tokenizer.word_index[word]
                                 k = k + 1
         
@@ -221,16 +240,27 @@ class NsfcDataLoader(BaseDataLoader):
         self.word_index = tokenizer.word_index
         print('Total %s unique tokens.' % len(self.word_index))
         data = np.zeros((len(data_df), self.config.data_loader.MAX_DOC_LENGTH), dtype='int32')
+
+        abs_len_list = []
         for i, abstract in enumerate(abstracts):
             word_tokens = text_to_word_sequence(abstract)
+            abs_len_list.append(len(word_tokens))
             j = 0
             for _, word in enumerate(word_tokens):
                 if ((word in tokenizer.word_index) 
-                        and (j < self.config.data_loader.MAX_DOC_LENGTH) 
-                        and (tokenizer.word_index[word] < self.config.data_loader.MAX_NB_WORDS)):
+                        and (j < self.config.data_loader.MAX_DOC_LENGTH)):
+                        # delete maximum number of token.
+                        # and (tokenizer.word_index[word] < self.config.data_loader.MAX_NB_WORDS)):
 
                         data[i, j] = tokenizer.word_index[word]
                         j = j + 1
+
+        abs_len_arr = np.array(abs_len_list)
+        print("abstract length 0.5 quantile", np.quantile(abs_len_arr, 0.5))
+        print("abstract length 0.9 quantile", np.quantile(abs_len_arr, 0.9))
+        print("abstract length 0.99 quantile", np.quantile(abs_len_arr, 0.99))
+        print("abstract length 1.0 quantile", np.quantile(abs_len_arr, 1))
+
         self.X_train = data[:self.split_index,:]
         self.y_train = code_index[:self.split_index,:]
         self.X_test = data[self.split_index:,:]
@@ -278,8 +308,9 @@ class NsfcDataLoader(BaseDataLoader):
             j = 0
             for _, word in enumerate(word_tokens):
                 if ((word in tokenizer.word_index) 
-                        and (j < self.config.data_loader.MAX_DOC_LENGTH) 
-                        and (tokenizer.word_index[word] < self.config.data_loader.MAX_NB_WORDS)):
+                        and (j < self.config.data_loader.MAX_DOC_LENGTH)):
+                        # delete maximum number of token.
+                        # and (tokenizer.word_index[word] < self.config.data_loader.MAX_NB_WORDS)):
                         data[i, j] = tokenizer.word_index[word]
                         j = j + 1
 

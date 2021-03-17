@@ -7,7 +7,7 @@
     "MAX_SENT_LENGTH": 30,
     "MAX_DOC_LENGTH": 300,
     "MAX_SENTS": 18,
-    "MAX_NB_WORDS": 100000,
+    // "MAX_NB_WORDS": 100000,
     "EMBEDDING_DIM": 100
   },
   "model":{

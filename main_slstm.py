@@ -11,7 +11,7 @@ experiment = Experiment(
 experiment.add_tag('wesh')
 
 from data_loader.nsfc_data_loader import NsfcDataLoader
-from models.slstm_model import WeShModel
+from models.slstm_model import SLSTMModel
 from trainers.slstm_trainer import SLSTMModelTrainer
 from utils.utils import process_config, create_dirs, get_args
 from utils.utils import Logger
@@ -59,7 +59,8 @@ def main():
     # load NSFC data
     print('Load NSFC data')
     data_loader = NsfcDataLoader(config)
-    X_train, y_train, X_test, y_test, word_length, embedding_matrix = data_loader.get_train_data()
+    X_train, y_train, X_test, y_test, word_length, embedding_matrix = data_loader.get_data()
+    aaa
     print("X_train\n", X_train)
     print("y_train\n", y_train)
 

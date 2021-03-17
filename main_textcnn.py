@@ -59,7 +59,7 @@ def main():
     # load NSFC data
     print('Load NSFC data')
     data_loader = NsfcDataLoader(config)
-    X_train, y_train, X_test, y_test, word_length, embedding_matrix = data_loader.get_train_data_plain()
+    X_train, y_train, X_test, y_test, word_length, embedding_matrix = data_loader.get_data_plain()
     print("X_train\n", X_train)
     print("y_train\n", y_train)
 
