@@ -73,7 +73,9 @@ class NsfcDataLoader(BaseDataLoader):
                                 sep='\t', 
                                 header=None, 
                                 names=['code', 'abstract', 'train_or_test'])
-
+        data_df = shuffle(data_df)
+        data_df = data_df.reset_index(drop=True)
+        
         abstract_sents = []
         code_index = []
         for i in range(len(data_df)):
@@ -153,6 +155,7 @@ class NsfcDataLoader(BaseDataLoader):
                                 names=['code', 'sub_code', 'abstract', 'train_or_test'])
         data_df['sub_code'] = data_df['sub_code'].astype('str')
         data_df = shuffle(data_df)
+        data_df = data_df.reset_index(drop=True)
 
         abstract_sents = []   
         main_code_index = []
@@ -228,6 +231,8 @@ class NsfcDataLoader(BaseDataLoader):
                                 sep='\t', 
                                 header=None, 
                                 names=['code', 'abstract', 'train_or_test'])
+        data_df = shuffle(data_df)
+        data_df = data_df.reset_index(drop=True)
         abstracts = data_df['abstract'].tolist()
 
         code_index = []
@@ -295,7 +300,8 @@ class NsfcDataLoader(BaseDataLoader):
                                 header=None, 
                                 names=['code', 'sub_code', 'abstract', 'train_or_test'])
         data_df['sub_code'] = data_df['sub_code'].astype('str')
-        data_df = shuffle(data_df, random_state=2)
+        data_df = shuffle(data_df)
+        data_df = data_df.reset_index(drop=True)
         
         abstracts = data_df['abstract'].tolist()
         tokenizer = Tokenizer(num_words=self.config.data_loader.MAX_NB_WORDS)
@@ -369,6 +375,8 @@ class NsfcDataLoader(BaseDataLoader):
                                 sep='\t', 
                                 header=None, 
                                 names=['code', 'abstract', 'train_or_test'])
+        data_df = shuffle(data_df)
+        data_df = data_df.reset_index(drop=True)
         code_index = []    
         for i in range(len(data_df)):
             code_index.append(self.code_to_index[data_df['code'][i]])
@@ -406,10 +414,9 @@ class NsfcDataLoader(BaseDataLoader):
                                 sep='\t', 
                                 header=None, 
                                 names=['code', 'sub_code', 'abstract', 'train_or_test'])
-        print(data_df.head())
         data_df = shuffle(data_df)
-        print(data_df.head())
-        aaa
+        data_df = data_df.reset_index(drop=True)
+
         data_df['sub_code'] = data_df['sub_code'].astype('str')
         abstract_num = len(data_df)
         abstracts = data_df['abstract'].tolist()
