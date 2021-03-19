@@ -401,11 +401,15 @@ class NsfcDataLoader(BaseDataLoader):
 
         return self.X_train, self.y_train, self.X_test, self.y_test
 
-    def get_data_bert():
+    def get_data_bert(self):
         data_df = pd.read_csv(self.file_name, 
                                 sep='\t', 
                                 header=None, 
                                 names=['code', 'sub_code', 'abstract', 'train_or_test'])
+        print(data_df.head())
+        data_df = shuffle(data_df)
+        print(data_df.head())
+        aaa
         data_df['sub_code'] = data_df['sub_code'].astype('str')
         abstract_num = len(data_df)
         abstracts = data_df['abstract'].tolist()

@@ -15,7 +15,7 @@ from sklearn.metrics import classification_report, precision_score, recall_score
 from sklearn.metrics import hamming_loss, coverage_error, label_ranking_average_precision_score
 from sklearn.metrics import label_ranking_loss, average_precision_score, ndcg_score
 
-from data_loader.nsfc_data_loader import get_data_bert
+from data_loader.nsfc_data_loader import NsfcDataLoader
 
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -  %(message)s',
@@ -40,7 +40,9 @@ class MyDataset(Dataset):
     def __len__(self):
         return len(self.list_items[0])
 
-X_train, y_train, X_test, y_test, main_code_test_label, sub_code_test_label = get_data_bert()
+config = []
+data_loader = NsfcDataLoader(config)
+X_train, y_train, X_test, y_test, main_code_test_label, sub_code_test_label = data_loader.get_data_bert()
 
 tokenizer = AutoTokenizer.from_pretrained('./scibert/scibert_scivocab_uncased')
 # tokenizer = AutoTokenizer.from_pretrained('allenai/scibert_scivocab_uncased')
