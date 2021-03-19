@@ -4,9 +4,8 @@
   },
   "data_loader": {
     "name": "nsfc_data_loader.NsfcDataLoader",
-    "MAX_SENT_LENGTH": 30,
-    "MAX_SENTS": 18,
-    // "MAX_NB_WORDS": 100000,
+    "MAX_SENT_LENGTH": 97,
+    "MAX_SENTS": 16,
     "EMBEDDING_DIM": 300
   },
   "model":{
@@ -16,7 +15,7 @@
     "name": "wesh_trainer.WeShModelTrainer",
     "num_epochs": 200,
     "batch_size": 64,
-    "validation_split": 0.282
+    "validation_split": 0.2
   },
   "callbacks":{
     "checkpoint_dir": "",

@@ -7,8 +7,8 @@ experiment = Experiment(
     auto_histogram_weight_logging=True,
     auto_histogram_gradient_logging=True,
     auto_histogram_activation_logging=True,
-
-experiment.add_tag('wesh')
+)
+experiment.add_tag('slstm')
 
 from data_loader.nsfc_data_loader import NsfcDataLoader
 from models.slstm_multilabel_model import SLSTMModel
@@ -22,6 +22,7 @@ from sklearn.metrics import precision_score, recall_score, f1_score
 from sklearn.metrics import hamming_loss, coverage_error, ndcg_score
 from sklearn.metrics import label_ranking_average_precision_score
 from sklearn.metrics import label_ranking_loss, average_precision_score 
+from sklearn.metrics import classification_report
 
 import datetime
 import sys
@@ -54,10 +55,11 @@ def main():
         for gpu in gpus:
             tf.config.experimental.set_memory_growth(gpu, True)
         logical_gpus = tf.config.experimental.list_logical_devices('GPU')
-        print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+        # print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
     except RuntimeError as e:
-        print(e)
-    print(device_lib.list_local_devices(),'\n')
+        print('-')
+        # print(e)
+    # print(device_lib.list_local_devices(),'\n')
 
 
     # load NSFC data
@@ -72,17 +74,16 @@ def main():
     # print("y_train\n", y_train)
 
     # create model
-    wesh_model = WeShModel(word_length, embedding_matrix, config)
-    print(wesh_model.model.summary())
+    slstm_model = SLSTMModel(word_length, embedding_matrix, config)
+    print(slstm_model.model.summary())
 
     # train model
-    # wesh_trainer = WeShModelTrainer(wesh_model.model, [X_train, y_train], None, config)
-    wesh_trainer = WeShModelTrainer(wesh_model.model, [X_train, y_train], [X_test, y_test], config)
+    slstm_trainer = SLSTMModelTrainer(slstm_model.model, [X_train, y_train], [X_test, y_test], config)
 
-    wesh_trainer.train()
+    slstm_trainer.train()
 
     # Evaluation
-    test_result = wesh_model.model.predict(X_test)
+    test_result = slstm_model.model.predict(X_test)
     test_result_label = test_result
     # # threshold method
     # test_result_label[test_result_label>=0.5] = 1

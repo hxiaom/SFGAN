@@ -278,7 +278,7 @@ class NsfcDataLoader(BaseDataLoader):
             coefs = np.asarray(values[1:], dtype='float32')
             embeddings_index[word] = coefs
         f.close()
-        print('Total %s word vectors.' % len(embeddings_index))
+        print('Glove 300d contains total %s word vectors.' % len(embeddings_index))
 
         self.embedding_matrix = np.random.random((len(self.word_index) + 1, self.config.data_loader.EMBEDDING_DIM))
         for word, i in self.word_index.items():
