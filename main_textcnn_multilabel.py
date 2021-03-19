@@ -57,7 +57,7 @@ def main():
         print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
     except RuntimeError as e:
         print(e)
-    print(device_lib.list_local_devices(),'\n')
+    # print(device_lib.list_local_devices(),'\n')
 
 
     # load NSFC data

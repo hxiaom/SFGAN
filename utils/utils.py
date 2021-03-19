@@ -25,7 +25,6 @@ def get_config_from_json(json_file):
 
 def process_config(args):
     config, _ = get_config_from_json(args.config)
-    config.exp.name = args.name
     config.callbacks.log_dir = os.path.join("experiments", time.strftime("%Y-%m-%d/",time.localtime()), config.exp.name, "logs/")
     config.callbacks.checkpoint_dir = os.path.join("experiments", time.strftime("%Y-%m-%d/",time.localtime()), config.exp.name, "checkpoints/")
     config.callbacks.tensorboard_log_dir = os.path.join("experiments", time.strftime("%Y-%m-%d/",time.localtime()), config.exp.name, "tensorboard/")

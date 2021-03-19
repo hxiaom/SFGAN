@@ -50,10 +50,18 @@ class TextCNNModel(BaseModel):
         # x_output = Dense(self.num_classes, activation='sigmoid')(drop)
         x_output = Dense(self.num_classes, activation='sigmoid', kernel_regularizer=regularizers.l2(1e-4))(flatten)
 
+        adam = tf.keras.optimizers.Adam(
+            learning_rate=0.1,
+            beta_1=0.9,
+            beta_2=0.999,
+            epsilon=1e-07,
+            amsgrad=False,
+            name="Adam"
+        )
         self.model = Model(inputs=docs_input, outputs=x_output)
         self.model.compile(loss='binary_crossentropy',
-                optimizer='adam',
-                metrics=['acc', 
+                optimizer=adam,
+                metrics=['categorical_accuracy', 
                         tf.keras.metrics.Recall(name='recall'), 
                         tf.keras.metrics.Precision(name='precision'),
                         tfa.metrics.F1Score(name='F1_micro', num_classes=self.num_classes, average='micro'),
