@@ -12,9 +12,9 @@
   },
   "trainer":{
     "name": "sfgan_trainer.LocalModelTrainer",
-    "num_epochs": 50,
+    "num_epochs": 500,
     "batch_size": 64,
-    "validation_split": 0.2
+    "validation_split": 0.05
   },
   "callbacks":{
     "checkpoint_monitor": "val_loss",

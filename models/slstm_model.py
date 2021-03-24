@@ -60,7 +60,7 @@ class AttLayer(Layer):
 class SLSTMModel(BaseModel):
     def __init__(self, word_length, embedding_matrix, configs):
         super(SLSTMModel, self).__init__(configs)
-        self.n_classes = 8
+        self.n_classes = 96
         self.build_model(word_length, embedding_matrix)
 
     def build_model(self, word_length, embedding_matrix):

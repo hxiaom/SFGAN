@@ -25,6 +25,15 @@ class SLSTMModelTrainer(BaseTrain):
                 verbose=self.config.callbacks.checkpoint_verbose,
             )
         )
+        self.callbacks.append(
+            EarlyStopping(
+                monitor="val_loss",
+                patience=10,
+                verbose=0,
+                mode="auto",
+                restore_best_weights=True,
+            )
+        )
 
         # self.callbacks.append(
         #     TensorBoard(
@@ -47,11 +56,11 @@ class SLSTMModelTrainer(BaseTrain):
             # class_weight=class_weights,
             # verbose=self.config.trainer.verbose_training,
             batch_size=self.config.trainer.batch_size,
-            validation_data = (self.data_test[0], self.data_test[1]),
-            # validation_split=self.config.trainer.validation_split,
+            # validation_data = (self.data_test[0], self.data_test[1]),
+            validation_split=self.config.trainer.validation_split,
             callbacks=self.callbacks,
         )
         self.loss.extend(history.history['loss'])
-        self.acc.extend(history.history['categorical_accuracy'])
+        self.acc.extend(history.history['categorical_crossentropy'])
         self.val_loss.extend(history.history['val_loss'])
         # self.val_acc.extend(history.history['val_acc'])

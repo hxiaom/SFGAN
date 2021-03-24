@@ -1,23 +1,12 @@
-from comet_ml import Experiment
-experiment = Experiment(
-    project_name="proposalclassification",
-    workspace="hxiaom",
-    auto_metric_logging=True,
-    auto_param_logging=True,
-    auto_histogram_weight_logging=True,
-    auto_histogram_gradient_logging=True,
-    auto_histogram_activation_logging=True,
-)
-experiment.add_tag('textcnn')
-
 from data_loader.nsfc_data_loader import NsfcDataLoader
-from models.textcnn_model import TextCNNModel
-from trainers.textcnn_trainer import TextCNNModelTrainer
+
 from utils.utils import process_config, create_dirs, get_args
 from utils.utils import Logger
+from models.textcnn_model import TextCNNModel
 
 from tensorflow.python.client import device_lib
 import tensorflow as tf
+import keras
 from sklearn.metrics import classification_report, precision_score
 from sklearn.metrics import recall_score, f1_score, hamming_loss, coverage_error
 from sklearn.metrics import label_ranking_average_precision_score
@@ -69,24 +58,10 @@ def main():
 
     # create model
     textcnn_model = TextCNNModel(word_length, embedding_matrix, config)
+    # textcnn_model = keras.models.load_model('./experiments/2021-03-24/default/checkpoints/default-35-1.82.hdf5')
+    textcnn_model.model.load_weights('./experiments/2021-03-24/default/checkpoints/default-35-1.82.hdf5')
     print(textcnn_model.model.summary())
 
-    # train model
-    textcnn_trainer = TextCNNModelTrainer(textcnn_model.model, [X_train, y_train], [X_test, y_test], config)
-    textcnn_trainer.train()
-
-    # Evaluation
-    y_train_label = y_train.argmax(axis=-1)
-    print('true result label')
-    print(y_train_label)
-
-    train_result = textcnn_model.model.predict(X_train)
-    train_result_label = np.argmax(train_result, axis=1)
-    print('train result label')
-    print(train_result_label)
-
-    cr = classification_report(y_train_label, train_result_label)
-    print('cr', cr)
 
     # Evaluation
     y_test_label = y_test.argmax(axis=-1)
@@ -101,22 +76,51 @@ def main():
     cr = classification_report(y_test_label, test_result_label)
     print('cr', cr)
 
-    precision = precision_score(y_test_label, test_result_label, average=None)
-    precision_micro = precision_score(y_test_label, test_result_label, average='micro')
-    print('Precision:', precision_micro)
-    print(precision)
+    # argsort method
+    idxs = np.argsort(test_result, axis=1)[:,-2:]
+    test_result_label = test_result
+    test_result_label.fill(0)
+    for i in range(idxs.shape[0]):
+        for j in range(idxs.shape[1]):
+            # if test_result[i][idxs[i][j]] >= 0.5:
+            test_result_label[i][idxs[i][j]] = 1
+    # test_true = y_test.argmax(axis=-1)
 
-    # Recall
-    recall = recall_score(y_test_label, test_result_label, average=None)
-    recall_micro = recall_score(y_test_label, test_result_label, average='micro')
-    print('Recall:', recall_micro)
-    print(recall)
+    count = 0
+    for i in range(len(y_test_label)):
+        if test_result_label[i][y_test_label[i]] == 1:
+            count = count + 1
 
-    # F1_score
-    F1 = f1_score(y_test_label, test_result_label, average=None)
-    F1_micro = f1_score(y_test_label, test_result_label, average='micro')
-    print('F1:', F1_micro)
-    print(F1)
+    percent = count / len(y_test_label)
+    print('top two accuracy:')
+    print(percent)
+
+    # argsort method
+    idxs = np.argsort(test_result, axis=1)[:,-3:]
+    test_result_label = test_result
+    test_result_label.fill(0)
+    for i in range(idxs.shape[0]):
+        for j in range(idxs.shape[1]):
+            # if test_result[i][idxs[i][j]] >= 0.5:
+            test_result_label[i][idxs[i][j]] = 1
+    # test_true = y_test.argmax(axis=-1)
+
+    count = 0
+    for i in range(len(y_test_label)):
+        if test_result_label[i][y_test_label[i]] == 1:
+            count = count + 1
+
+    percent = count / len(y_test_label)
+    print('top three accuracy:')
+    print(percent)
+
+    dataset = open('./wrong_answer.txt', 'a')
+    dataset.write('index' + 'true' + '\t' + 'predict' + '\n')
+    for i in range(len(y_test_label)):
+        if y_test_label[i] != test_result_label[i]:
+            dataset.write(str(i) + '\t' + str(y_test_label[i]) + '\t' + str(test_result_label[i]) + '\n')
+    dataset.close()
+ 
 
 if __name__ == '__main__':
     main()

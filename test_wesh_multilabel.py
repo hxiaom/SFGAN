@@ -62,68 +62,14 @@ def main():
     # print("y_train\n", y_train)
 
     # create model
-    wesh_model = keras.models.load_model('./experiments/2021-01-12/wesh_1/checkpoints/wesh_1-53-0.05.hdf5')
+    wesh_model = keras.models.load_model('./experiments/2021-03-24/default/checkpoints/default-35-1.82.hdf5')
     print(wesh_model.summary())
 
 
     # train model
     # wesh_trainer = WeShModelTrainer(wesh_model.model, [X_train, y_train], None, config)
     test_result = wesh_model.predict(X_test)
-    
-    # threshold method
-    # test_result[test_result>=0.5] = 1
-    # test_result[test_result<0.5] = 0
-
-    # print(test_result)
-    # print(y_test)
-
-    # argsort method
-    idxs = np.argsort(test_result, axis=1)[:,-2:]
-    test_result.fill(0)
-    for i in range(idxs.shape[0]):
-        for j in range(idxs.shape[1]):
-            test_result[i][idxs[i][j]] = 1
-    # test_true = y_test.argmax(axis=-1)
-
-    print(idxs)
-    print(test_result)
-    print(y_test)
-
-    # Partitions Evaluation
-    # Precision
-    precision = precision_score(y_test, test_result, average=None)
-    precision_macro = precision_score(y_test, test_result, average='macro')
-    print('Precision:', precision_macro)
-    print(precision)
-
-    # Recall
-    recall = recall_score(y_test, test_result, average=None)
-    recall_macro = recall_score(y_test, test_result, average='macro')
-    print('Recall:', recall_macro)
-    print(recall)
-
-    # F1_score
-    F1 = f1_score(y_test, test_result, average=None)
-    F1_macro = f1_score(y_test, test_result, average='macro')
-    print('F1:', F1_macro)
-    print(F1)
-
-    # Hamming Loss
-    hamming = hamming_loss(y_test, test_result)
-    print('Hamming Loss:', hamming)
-
-    # Rankings Evaluation
-    # Coverage
-    coverage = coverage_error(y_test, test_result)
-    print('Coverage Error:', coverage)
-
-    # Average Precision Score
-    lrap = label_ranking_average_precision_score(y_test, test_result)
-    print('Average Precision Score:', lrap)
-
-    # Ranking Loss
-    rl = label_ranking_loss(y_test, test_result)
-    print('Ranking Loss:', rl)
+ 
 
 if __name__ == '__main__':
     main()

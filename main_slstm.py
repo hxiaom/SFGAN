@@ -60,7 +60,6 @@ def main():
     print('Load NSFC data')
     data_loader = NsfcDataLoader(config)
     X_train, y_train, X_test, y_test, word_length, embedding_matrix = data_loader.get_data()
-    aaa
     print("X_train\n", X_train)
     print("y_train\n", y_train)
 
@@ -69,14 +68,14 @@ def main():
     # print("y_train\n", y_train)
 
     # create model
-    wesh_model = WeShModel(word_length, embedding_matrix, config)
-    print(wesh_model.model.summary())
+    slstm_model = SLSTMModel(word_length, embedding_matrix, config)
+    print(slstm_model.model.summary())
 
     # train model
     # wesh_trainer = WeShModelTrainer(wesh_model.model, [X_train, y_train], None, config)
-    wesh_trainer = WeShModelTrainer(wesh_model.model, [X_train, y_train], [X_test, y_test], config)
+    slstm_trainer = SLSTMModelTrainer(slstm_model.model, [X_train, y_train], [X_test, y_test], config)
 
-    wesh_trainer.train()
+    slstm_trainer.train()
 
 if __name__ == '__main__':
     main()

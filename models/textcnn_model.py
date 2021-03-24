@@ -12,7 +12,7 @@ class TextCNNModel(BaseModel):
         self.build_model(word_length, embedding_matrix)
 
     def build_model(self, word_length, embedding_matrix):
-        num_classes = 8
+        num_classes = 91
         dropout_rate = 0.4
         embedding_layer = Embedding(word_length + 1,
                                     self.config.data_loader.EMBEDDING_DIM,
@@ -44,7 +44,7 @@ class TextCNNModel(BaseModel):
         merged = Concatenate(axis=-1)(pooled)
         flatten = Flatten()(merged)
         drop = Dropout(rate=dropout_rate)(flatten)
-        x_output = Dense(num_classes, kernel_initializer='he_uniform', activation='softmax')(drop)
+        x_output = Dense(num_classes, kernel_initializer='he_uniform', activation='softmax', kernel_regularizer=tf.keras.regularizers.l1(0.01))(drop)
 
         self.model = Model(inputs=docs_input, outputs=x_output)
         self.model.compile(loss='categorical_crossentropy',
@@ -52,5 +52,5 @@ class TextCNNModel(BaseModel):
                 metrics=['acc', 
                         tf.keras.metrics.Recall(name='recall'), 
                         tf.keras.metrics.Precision(name='precision'),
-                        tfa.metrics.F1Score(name='F1_micro', num_classes=8 ,average='micro'),
-                        tfa.metrics.F1Score(name='F1_macro', num_classes=8 ,average='macro')])
+                        tfa.metrics.F1Score(name='F1_micro', num_classes=91, average='micro'),
+                        tfa.metrics.F1Score(name='F1_macro', num_classes=91, average='macro')])
