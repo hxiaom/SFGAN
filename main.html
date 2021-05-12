@@ -1,0 +1,31 @@
+    <!-- 车店信息页面  -->
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html" charset="utf-8"/>
+         <SCRIPT >
+             var discipline1 = '{{discipline1}}';
+             var discipline2 = '{{discipline2}}';
+             var discipline3 = '{{discipline3}}';
+             var discipline1_value = '{{discipline1_value}}';
+             var discipline2_value = '{{discipline2_value}}';
+             var discipline3_value = '{{discipline3_value}}';
+         </SCRIPT>
+        
+        <title>Proposal Classification</title>
+    </head>
+    
+    <body onload="initFavor()">
+        <h1>Multi-discipline Proposal Classification</h1>
+        <form method="post">
+            Proposal:<br>
+            <textarea rows="30" cols="100" type="text" name="proposal"></textarea>                                                                                                                                                                                                                                        
+            <br>
+            <input type="submit" value="Submit">
+        </form> 
+            
+        <h1>Discipline1: {{discipline1}} {{discipline1_value}}</h1>
+        <h1>Discipline2: {{discipline2}} {{discipline2_value}}</h1>
+        <h1>Discipline3: {{discipline3}} {{discipline3_value}}</h1>
+    </body>
+</html>

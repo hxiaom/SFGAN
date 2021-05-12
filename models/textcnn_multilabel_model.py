@@ -2,9 +2,9 @@ from base.base_model import BaseModel
 
 import tensorflow as tf
 import tensorflow_addons as tfa
-from keras.layers import Input, Dense, Dropout, Flatten, Embedding
-from keras.layers import Conv1D, MaxPooling1D, Concatenate
-from keras.models import Model
+from tensorflow.keras.layers import Input, Dense, Dropout, Flatten, Embedding
+from tensorflow.keras.layers import Conv1D, MaxPooling1D, Concatenate
+from tensorflow.keras.models import Model
 from tensorflow.keras import regularizers
 
 class TextCNNModel(BaseModel):

@@ -24,8 +24,8 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -  %(message)
 logger = logging.getLogger(__name__)
 
 MAX_LENGTH = 300
-num_class = 96
-num_epochs = 3
+num_class = 91
+num_epochs = 10
 batch_size = 8
 
 class MyDataset(Dataset):
@@ -275,31 +275,31 @@ print('F1:', F1_macro)
 print(F1)
 
 # Main code accuracy
-main_code_accuracy = [0]*96
+main_code_accuracy = [0]*91
 main_code_accuracy_whole = 0
 for i in range(y_test_label.shape[0]):
-    for j in range(96):
+    for j in range(91):
         if main_code_test_label[i][j] == 1 and test_result_label[i][j] == 1:
             main_code_accuracy[j] = main_code_accuracy[j] + 1
             main_code_accuracy_whole = main_code_accuracy_whole + 1
 
 print('Main code accuracy')
-# for i in range(96):
+# for i in range(91):
 #     main_code_accuracy[i] = main_code_accuracy[i] / y_test_label.shape[1]
 #     print(i, main_code_accuracy[i])
 print(main_code_accuracy_whole / y_test_label.shape[0])
 
 # Sub code accuracy
-sub_code_accuracy = [0]*96
+sub_code_accuracy = [0]*91
 sub_code_accuracy_whole = 0
 for i in range(y_test_label.shape[0]):
-    for j in range(96):
+    for j in range(91):
         if sub_code_test_label[i][j] == 1 and test_result_label[i][j] == 1:
             sub_code_accuracy[j] = sub_code_accuracy[j] + 1
             sub_code_accuracy_whole = sub_code_accuracy_whole + 1
 
 print('Sub code accuracy')
-# for i in range(96):
+# for i in range(91):
 #     sub_code_accuracy[i] = sub_code_accuracy[i] / y_test_label.shape[1]
 #     print(i, sub_code_accuracy[i])
 print(sub_code_accuracy_whole / y_test_label.shape[0])

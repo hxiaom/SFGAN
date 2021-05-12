@@ -31,6 +31,13 @@ def process_config(args):
 
     return config
 
+def process_config_new():
+    config, _ = get_config_from_json('./configs/textcnn_config.json')
+    config.callbacks.log_dir = os.path.join("experiments", time.strftime("%Y-%m-%d/",time.localtime()), config.exp.name, "logs/")
+    config.callbacks.checkpoint_dir = os.path.join("experiments", time.strftime("%Y-%m-%d/",time.localtime()), config.exp.name, "checkpoints/")
+    config.callbacks.tensorboard_log_dir = os.path.join("experiments", time.strftime("%Y-%m-%d/",time.localtime()), config.exp.name, "tensorboard/")
+
+    return config
 
 def create_dirs(dirs):
     """

@@ -2,9 +2,9 @@ from base.base_model import BaseModel
 
 import tensorflow as tf
 import tensorflow_addons as tfa
-from keras.layers import Input, Dense, Dropout, Flatten, Embedding
-from keras.layers import Conv1D, MaxPooling1D, Concatenate
-from keras.models import Model
+from tensorflow.keras.layers import Input, Dense, Dropout, Flatten, Embedding
+from tensorflow.keras.layers import Conv1D, MaxPooling1D, Concatenate
+from tensorflow.keras.models import Model
 
 class TextCNNModel(BaseModel):
     def __init__(self, word_length, embedding_matrix, configs):
@@ -18,7 +18,8 @@ class TextCNNModel(BaseModel):
                                     self.config.data_loader.EMBEDDING_DIM,
                                     weights=[embedding_matrix],
                                     input_length=self.config.data_loader.MAX_SENT_LENGTH,
-                                    trainable=False
+                                    trainable=False,
+                                    name='embedding_9'
                                     # mask_zero=True  # mask will report ERROR: CUDNN_STATUS_BAD_PARAM
                                     )
         
@@ -44,7 +45,8 @@ class TextCNNModel(BaseModel):
         merged = Concatenate(axis=-1)(pooled)
         flatten = Flatten()(merged)
         drop = Dropout(rate=dropout_rate)(flatten)
-        x_output = Dense(num_classes, kernel_initializer='he_uniform', activation='softmax', kernel_regularizer=tf.keras.regularizers.l1(0.01))(drop)
+        # dense = Dense(300, activation='relu', kernel_regularizer=tf.keras.regularizers.l1(0.001))(drop)
+        x_output = Dense(num_classes, kernel_initializer='he_uniform', activation='sigmoid', kernel_regularizer=tf.keras.regularizers.l1(0.01))(drop)
 
         self.model = Model(inputs=docs_input, outputs=x_output)
         self.model.compile(loss='categorical_crossentropy',

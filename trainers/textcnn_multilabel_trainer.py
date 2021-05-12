@@ -1,7 +1,7 @@
 from base.base_trainer import BaseTrain
 import os
-from keras.callbacks import ModelCheckpoint, TensorBoard
-from keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
+from tensorflow.keras.callbacks import EarlyStopping
 
 class TextCNNModelTrainer(BaseTrain):
     def __init__(self, model, data_train, data_test, config):

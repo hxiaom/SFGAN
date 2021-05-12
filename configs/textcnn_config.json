@@ -1,6 +1,6 @@
 {
   "exp": {
-    "name": "default"
+    "name": "textcnn_4"
   },
   "data_loader": {
     "name": "nsfc_data_loader.NsfcDataLoader",

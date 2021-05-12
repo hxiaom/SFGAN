@@ -59,7 +59,7 @@ def main():
     # create model
     textcnn_model = TextCNNModel(word_length, embedding_matrix, config)
     # textcnn_model = keras.models.load_model('./experiments/2021-03-24/default/checkpoints/default-35-1.82.hdf5')
-    textcnn_model.model.load_weights('./experiments/2021-03-24/default/checkpoints/default-35-1.82.hdf5')
+    textcnn_model.model.load_weights('experiments/2021-04-07/textcnn/checkpoints/textcnn-85-2.23.hdf5')
     print(textcnn_model.model.summary())
 
 

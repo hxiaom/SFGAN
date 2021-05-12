@@ -75,6 +75,11 @@ def main():
     textcnn_trainer = TextCNNModelTrainer(textcnn_model.model, [X_train, y_train], [X_test, y_test], config)
     textcnn_trainer.train()
 
+    print(type(textcnn_model.model))
+    # textcnn_model.model.save('./model.h5')
+    textcnn_model.model.save_weights('./weight_4.h5')
+    # textcnn_trainer.save()
+
     # Evaluation
     y_train_label = y_train.argmax(axis=-1)
     print('true result label')

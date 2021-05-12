@@ -93,10 +93,33 @@ class NsfcDataLoader(BaseDataLoader):
         #                     'H31':95}
         # self.n_classes = 96
 
-        # level 2
-        self.file_name = './data/dataset_level2.txt'
-        # self.split_index = 800
-        self.split_index = 86549
+        # # level 2
+        # self.file_name = './data/dataset_level2_without_multilabel.txt'
+        # # self.split_index = 800
+        # self.split_index = 86549
+        # self.code_to_index = {'A01':0, 'A02':1, 'A03':2, 'A04':3, 'A05':4,
+        #                     'B01':5, 'B02':6, 'B03':7, 'B04':8, 'B05':9,
+        #                     'B06':10, 'B07':11, 'B08': 12, 'C01':13, 'C02':14, 
+        #                     'C03':15, 'C04':16, 'C05':17, 'C06':18, 'C07':19,
+        #                     'C08':20, 'C09':21, 'C10':22, 'C11':23, 'C12':24,
+        #                     'C13':25, 'C14':26, 'C15':27, 'C16':28, 'C17':29, 
+        #                     'C18':30, 'C19':31, 'C20':32, 'C21':33, 'D01':34, 
+        #                     'D02':35, 'D03':36, 'D04':37, 'D05':38, 'D06':39, 
+        #                     'D07':40, 'E01':41, 'E02':42, 'E03':43, 'E04':44, 
+        #                     'E05':45, 'E06':46, 'E07':47, 'E08':48, 'E09':49, 
+        #                     'F01':50, 'F02':51, 'F03':52, 'F04':53, 'F05':54, 
+        #                     'F06':55, 'G01':56, 'G02':57, 'G03':58, 'G04':59, 
+        #                     'H01':60, 'H02':61, 'H03':62, 'H04':63, 'H05':64, 
+        #                     'H06':65, 'H07':66, 'H08':67, 'H09':68, 'H10':69, 
+        #                     'H11':70, 'H12':71, 'H13':72, 'H14':73, 'H15':74, 
+        #                     'H16':75, 'H17':76, 'H18':77, 'H19':78, 'H20':79,
+        #                     'H21':80, 'H22':81, 'H23':82, 'H24':83, 'H25':84, 
+        #                     'H26':85, 'H27':86, 'H28':87, 'H29':88, 'H30':89, 
+        #                     'H31':90}
+        # self.n_classes = 91
+
+        self.file_name = './data/multilabel.txt'
+        self.split_index = 7983
         self.code_to_index = {'A01':0, 'A02':1, 'A03':2, 'A04':3, 'A05':4,
                             'B01':5, 'B02':6, 'B03':7, 'B04':8, 'B05':9,
                             'B06':10, 'B07':11, 'B08': 12, 'C01':13, 'C02':14, 
@@ -393,7 +416,7 @@ class NsfcDataLoader(BaseDataLoader):
         code_index = np.add(main_code_index, sub_code_index)
         code_index[np.where(code_index >1)] = 1
         print('code label:\n', code_index)
-
+        # code_index = sub_code_index
         self.X_train = data[:self.split_index,:]
         self.y_train = code_index[:self.split_index,:]
         self.X_test = data[self.split_index:,:]
