@@ -1,6 +1,6 @@
 from base.base_trainer import BaseTrain
 import os
-from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, EarlyStopping
+from keras.callbacks import ModelCheckpoint, TensorBoard, EarlyStopping
 from sklearn.utils import class_weight
 import numpy as np
 

@@ -18,7 +18,7 @@ class TextCNNModel(BaseModel):
                                     self.config.data_loader.EMBEDDING_DIM,
                                     weights=[embedding_matrix],
                                     input_length=self.config.data_loader.MAX_SENT_LENGTH,
-                                    trainable=False,
+                                    # trainable=False,
                                     name='embedding_9'
                                     # mask_zero=True  # mask will report ERROR: CUDNN_STATUS_BAD_PARAM
                                     )

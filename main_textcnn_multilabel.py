@@ -1,15 +1,3 @@
-from comet_ml import Experiment
-experiment = Experiment(
-    project_name="proposalclassification",
-    workspace="hxiaom",
-    auto_metric_logging=True,
-    auto_param_logging=True,
-    auto_histogram_weight_logging=True,
-    auto_histogram_gradient_logging=True,
-    auto_histogram_activation_logging=True,
-)
-experiment.add_tag('textcnn')
-
 from data_loader.nsfc_data_loader import NsfcDataLoader
 from models.textcnn_multilabel_model import TextCNNModel
 from trainers.textcnn_multilabel_trainer import TextCNNModelTrainer

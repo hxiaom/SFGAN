@@ -1,37 +1,33 @@
 from data_loader.nsfc_data_loader import NsfcDataLoader
-
+from models.textcnn_model import TextCNNModel
+from trainers.textcnn_trainer import TextCNNModelTrainer
 from utils.utils import process_config, create_dirs, get_args
 from utils.utils import Logger
-from models.textcnn_model import TextCNNModel
 
 from tensorflow.python.client import device_lib
 import tensorflow as tf
-from tensorflow.keras.layers import Input
+from tensorflow.keras.layers import Input, Dense, Dropout, Flatten, Embedding
+from tensorflow.keras.layers import Conv1D, MaxPooling1D, Concatenate
 from tensorflow.keras.models import Model
-import keras
 from sklearn.metrics import classification_report, precision_score
 from sklearn.metrics import recall_score, f1_score, hamming_loss, coverage_error
 from sklearn.metrics import label_ranking_average_precision_score
 from sklearn.metrics import label_ranking_loss, average_precision_score, ndcg_score
-
-import datetime
-import time
-import sys
-import numpy as np
-
 import innvestigate
 import innvestigate.utils as iutils
 
+import datetime
+import sys
+import numpy as np
 
-# plot package
-# %matplotlib inline
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import cm, transforms
 from matplotlib.font_manager import FontProperties
 
+import time
+
 MAX_SEQ_LENGTH = 400
-EMBEDDING_DIM = 300
 
 def main():
     # capture the config and process the json configuration file
@@ -53,7 +49,8 @@ def main():
     # if don't add this, it will report ERROR: Fail to find the dnn implementation.
     gpus = tf.config.experimental.list_physical_devices('GPU')
     if not gpus:
-        return "No GPU available"
+        print("No GPU available")
+        return
     try:
         # Currently, memory growth needs to be the same across GPUs
         for gpu in gpus:
@@ -64,92 +61,65 @@ def main():
         print(e)
     print(device_lib.list_local_devices(),'\n')
 
-
     # load NSFC data
     print('Load NSFC data')
     data_loader = NsfcDataLoader(config)
-    X_train, y_train, X_test, y_test, word_length, embedding_matrix = data_loader.get_data_plain()
+    X_train, y_train = data_loader.get_data_plain_2()
     print("X_train\n", X_train)
     print("y_train\n", y_train)
 
     # create model
-    textcnn_model = TextCNNModel(word_length, embedding_matrix, config)
-    print(textcnn_model.model.summary())
-    # textcnn_model = keras.models.load_model('./experiments/2021-03-24/default/checkpoints/default-35-1.82.hdf5')
-    # textcnn_model.model.load_weights('experiments/2021-04-07/textcnn/checkpoints/textcnn-85-2.23.hdf5')
-    textcnn_model.model.load_weights('experiments/2021-05-11/textcnn_4/checkpoints/textcnn_4-40-3.34.hdf5')
-    
+    num_classes = 91
+    dropout_rate = 0.4
+    EMBEDDING_DIM = 300
 
-    # Evaluation
-    y_test_label = y_test.argmax(axis=-1)
-    print('true result label')
-    print(y_test_label)
+    docs_input = Input(shape=(400, 300))
 
-    test_result = textcnn_model.model.predict(X_test)
-    labels_pred = np.argmax(test_result, axis=1)
-    test_result_label = np.argmax(test_result, axis=1)
-    print('test result label')
-    print(test_result_label)
+    kernel_sizes = [3, 4, 5]
+    pooled = []
 
-    cr = classification_report(y_test_label, test_result_label)
-    print('cr', cr)
+    for kernel in kernel_sizes:
+        conv = Conv1D(filters=100,
+                    kernel_size=kernel,
+                    padding='valid',
+                    strides=1,
+                    kernel_initializer='he_uniform',
+                    activation='relu')(docs_input)
+        pool = MaxPooling1D(pool_size=400 - kernel + 1)(conv)
+        pooled.append(pool)
 
-    # argsort method
-    idxs = np.argsort(test_result, axis=1)[:,-2:]
-    test_result_label = test_result
-    test_result_label.fill(0)
-    for i in range(idxs.shape[0]):
-        for j in range(idxs.shape[1]):
-            # if test_result[i][idxs[i][j]] >= 0.5:
-            test_result_label[i][idxs[i][j]] = 1
-    # test_true = y_test.argmax(axis=-1)
+    merged = Concatenate(axis=-1)(pooled)
+    flatten = Flatten()(merged)
+    drop = Dropout(rate=dropout_rate)(flatten)
+    # dense = Dense(300, activation='relu', kernel_regularizer=tf.keras.regularizers.l1(0.001))(drop)
+    x_output = Dense(num_classes, kernel_initializer='he_uniform', activation='sigmoid', kernel_regularizer=tf.keras.regularizers.l1(0.01))(drop)
 
-    count = 0
-    for i in range(len(y_test_label)):
-        if test_result_label[i][y_test_label[i]] == 1:
-            count = count + 1
+    textcnn_model = Model(inputs=docs_input, outputs=x_output)
+    textcnn_model.compile(loss='categorical_crossentropy',
+            optimizer='adam',
+            metrics=['acc', 
+                    tf.keras.metrics.Recall(name='recall'), 
+                    tf.keras.metrics.Precision(name='precision')])
+    print(textcnn_model.summary())
 
-    percent = count / len(y_test_label)
-    print('top two accuracy:')
-    print(percent)
+    # train model
+    history = textcnn_model.fit(
+            X_train, y_train,
+            epochs=2,
+            # class_weight=class_weights,
+            # verbose=self.config.trainer.verbose_training,
+            batch_size=64,
+            # validation_data = (self.data_test[0], self.data_test[1])
+            validation_split=0.2,
+        )
 
-    # argsort method
-    idxs = np.argsort(test_result, axis=1)[:,-3:]
-    test_result_label = test_result
-    test_result_label.fill(0)
-    for i in range(idxs.shape[0]):
-        for j in range(idxs.shape[1]):
-            # if test_result[i][idxs[i][j]] >= 0.5:
-            test_result_label[i][idxs[i][j]] = 1
-    # test_true = y_test.argmax(axis=-1)
-
-    count = 0
-    for i in range(len(y_test_label)):
-        if test_result_label[i][y_test_label[i]] == 1:
-            count = count + 1
-
-    percent = count / len(y_test_label)
-    print('top three accuracy:')
-    print(percent)
-
-    # dataset = open('./wrong_answer.txt', 'a')
-    # dataset.write('index' + 'true' + '\t' + 'predict' + '\n')
-    # for i in range(len(y_test_label)):
-    #     if y_test_label[i] != test_result_label[i]:
-    #         dataset.write(str(i) + '\t' + str(y_test_label[i]) + '\t' + str(test_result_label[i]) + '\n')
-    # dataset.close()
- 
+    textcnn_model.save_weights('./weight_6.h5')
+    # textcnn_trainer.save()
 
     # Remove softmax layer
-    model_with_softmax = textcnn_model.model
+    model_with_softmax = textcnn_model
     # model_without_softmax = iutils.model_wo_softmax(textcnn_model.model)
     model_without_softmax = model_with_softmax
-    model_without_softmax.layers.pop(0)
-    print(model_without_softmax.summary())
-    # model_without_softmax.layers.pop(0)
-    docs_input = Input(shape=(400,300))
-    model_without_softmax = model_without_softmax(docs_input)
-    model_without_softmax = Model(docs_input, model_without_softmax)
     print(model_without_softmax.summary())
 
     # Specify methods that you would like to use to explain the model. 
@@ -161,16 +131,18 @@ def main():
 
     analyzer = innvestigate.create_analyzer('lrp.z', model_without_softmax)
     x = X_train[0]
-    x = x.reshape((1, MAX_SEQ_LENGTH))  
+    x = x.reshape((1, MAX_SEQ_LENGTH, 300))  
     presm = model_without_softmax.predict_on_batch(x)[0] #forward pass without softmax
     print(presm) 
     a = analyzer.analyze(x)
     print('aaaaaaaaaaaaaaaaaaaaa')
     print(a)
+    print(a['input_1'].shape)
     print('aaaaaaaaaaaaaaaaaaaaaaaaa')
     a = np.squeeze(a)
     a = np.sum(a, axis=1)
     print(a)
+    aaaaaaa
 
     # specify cluster that we want to investigate
     inspect_cluster = 4
@@ -305,5 +277,6 @@ def plot_text_heatmap(words, scores, title="", width=10, height=0.3, verbose=0, 
     
     return
 
+    
 if __name__ == '__main__':
     main()

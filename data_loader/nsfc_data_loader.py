@@ -9,6 +9,11 @@ from keras.utils.np_utils import to_categorical
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.utils import shuffle
+import nltk
+import re
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+
 
 import pandas as pd
 import numpy as np
@@ -372,6 +377,58 @@ class NsfcDataLoader(BaseDataLoader):
         return (self.X_train, self.y_train, self.X_test, 
                 self.y_test, len(self.word_index), self.embedding_matrix)
 
+    def get_data_plain_2(self):
+        data_df = pd.read_csv(self.file_name, 
+                                sep='\t', 
+                                header=None, 
+                                names=['code', 'abstract', 'train_or_test'])
+        print('before shuffle')
+        print(data_df.head())
+        data_df = data_df.sample(frac=0.2)
+        SAMPLE_SIZE = len(data_df)
+        data_df = shuffle(data_df, random_state=25)
+        data_df = data_df.reset_index(drop=True)
+        print('after shuffle')
+        print(data_df.head())
+        abstracts = data_df['abstract'].tolist()
+
+        code_index = []
+        for i in range(len(data_df)):
+            code_index.append(self.code_to_index[data_df['code'][i]])
+        code_index = to_categorical(np.asarray(code_index))
+
+        embeddings_index = {}
+        f = open('./data/glove.6B.300d.txt')
+        for line in f:
+            values = line.split()
+            word = values[0]
+            coefs = np.asarray(values[1:], dtype='float32')
+            embeddings_index[word] = coefs
+        f.close()
+        print('Glove 300d contains total %s word vectors.' % len(embeddings_index))
+
+        data_df['abs_token'] = data_df['abstract'].apply(tokenize_and_remove_stop_words)
+
+        # prepare text samples and their labels
+        embedding_matrix = np.zeros((SAMPLE_SIZE, 400, 300))
+        papers = []
+        for i, content in enumerate(data_df.abs_token.values):
+            paper = []
+            counter = 0
+            for j, v in enumerate(content[:400]):
+                embedding_vector = embeddings_index.get(v)
+                if embedding_vector is not None:
+                    embedding_matrix[i, j, :] = embedding_vector
+                    counter = counter + 1
+                paper.append(v)
+            papers.append(paper)
+
+        X_train = embedding_matrix
+        # X_train=np.expand_dims(embedding_matrix, axis=1),
+        y_train = code_index
+        return X_train, y_train
+
+
     def get_data_plain_multilabel(self):
         data_df = pd.read_csv(self.file_name, 
                                 sep='\t', 
@@ -524,3 +581,63 @@ class NsfcDataLoader(BaseDataLoader):
 
         return (abstracts_train, code_index_train, abstracts_test, 
                 code_index_test, main_code_test_label, sub_code_test_label)
+
+
+def tokenize_and_remove_stop_words(text):
+    '''tokenize and remove stop words
+
+    Args: 
+        string
+
+    Returns:
+        token list as ['token1', 'token2', ...]
+    '''
+    text = text.lower()
+    tokens = [word for word in text_to_word_sequence(text) if re.search('[a-zA-Z]', word)]
+
+    # # remove stop words 
+    # stop_words = set(stopwords.words('english')) 
+    # tokens_remove_stop_words = [w for w in tokens if not w in stop_words]
+
+    # lemmatizer = WordNetLemmatizer() 
+    # tokens_lemmatized = [lemmatizer.lemmatize(w) for w in tokens]
+
+    return tokens
+
+
+def embedding():
+    '''embed abstract
+
+    Args: None
+
+    Returns:
+
+    '''
+
+    # build word-embedding index 
+    embeddings_index = {}
+    with open(os.path.join(GLOVE_DIR, 'glove.6B.%sd.txt' % EMBEDDING_DIM), encoding='utf-8') as f:
+        for line in f:
+            values = line.split()
+            word = values[0]
+            coefs = np.asarray(values[1:], dtype='float32')
+            embeddings_index[word] = coefs
+
+    # prepare text samples and their labels
+    papers = []
+    for i, content in enumerate(paper_df.content_token.values):
+        paper = []
+        counter = 0
+        for j, v in enumerate(content[:MAX_SEQ_LENGTH]):
+            embedding_vector = embeddings_index.get(v)
+            if embedding_vector is not None:
+                embedding_matrix[i, j, :] = embedding_vector
+                counter = counter + 1
+            paper.append(v)
+        print(len(content), counter, counter/len(content))
+        papers.append(paper)
+
+    return dict(
+        embedding_matrix=np.expand_dims(embedding_matrix, axis=1),
+        encoded_papers=papers
+    )

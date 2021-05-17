@@ -1,15 +1,3 @@
-from comet_ml import Experiment
-experiment = Experiment(
-    project_name="proposalclassification",
-    workspace="hxiaom",
-    auto_metric_logging=True,
-    auto_param_logging=True,
-    auto_histogram_weight_logging=True,
-    auto_histogram_gradient_logging=True,
-    auto_histogram_activation_logging=True,
-)
-experiment.add_tag('textcnn')
-
 from data_loader.nsfc_data_loader import NsfcDataLoader
 from models.textcnn_model import TextCNNModel
 from trainers.textcnn_trainer import TextCNNModelTrainer
@@ -48,7 +36,8 @@ def main():
     # if don't add this, it will report ERROR: Fail to find the dnn implementation.
     gpus = tf.config.experimental.list_physical_devices('GPU')
     if not gpus:
-        return "No GPU available"
+        print("No GPU available")
+        return
     try:
         # Currently, memory growth needs to be the same across GPUs
         for gpu in gpus:
@@ -58,7 +47,6 @@ def main():
     except RuntimeError as e:
         print(e)
     print(device_lib.list_local_devices(),'\n')
-
 
     # load NSFC data
     print('Load NSFC data')
