@@ -20,7 +20,6 @@ from sklearn.utils import shuffle
 
 import matplotlib.pyplot as plt
 from matplotlib import cm, transforms
-from matplotlib.font_manager import FontProperties
 
 
 EXP_NAME = 'textcnn'
@@ -28,6 +27,8 @@ MAX_SEQ_LENGTH = 400
 EMBEDDING_DIM = 300
 NUM_CLASSES = 91
 DROPOUT_RATE = 0.4
+
+NUM_EPOCHS = 10
 FILE_NAME = './data/multilabel.txt'
 split_index = 7983
 CODE_TO_INDEX = {'A01':0, 'A02':1, 'A03':2, 'A04':3, 'A05':4,
@@ -161,7 +162,8 @@ def get_data_plain():
                             names=['code', 'abstract', 'train_or_test'])
     print('before shuffle')
     print(data_df.head())
-    data_df = data_df.sample(frac=0.2)
+    data_df = data_df.head()
+    # data_df = data_df.sample(frac=0.5)
     SAMPLE_SIZE = len(data_df)
     data_df = shuffle(data_df, random_state=25)
     data_df = data_df.reset_index(drop=True)
@@ -269,12 +271,14 @@ textcnn_model.compile(loss='categorical_crossentropy',
         metrics=['acc', 
                 tf.keras.metrics.Recall(name='recall'), 
                 tf.keras.metrics.Precision(name='precision')])
-history = textcnn_model.fit(
-        X_train, y_train,
-        epochs=2,
-        batch_size=64,
-        validation_split=0.2,
-    )
+textcnn_model.load_weights('experiments/2021-05-11/textcnn_4/checkpoints/textcnn_4-40-3.34.hdf5', by_name=True, skip_mismatch=True)
+
+# history = textcnn_model.fit(
+#         X_train, y_train,
+#         epochs=NUM_EPOCHS,
+#         batch_size=64,
+#         validation_split=0.2,
+#     )
 
 # save model
 textcnn_model.save_weights('./weight_6.h5')
@@ -289,16 +293,20 @@ print(model_without_softmax.summary())
 # Specify methods that you would like to use to explain the model. 
 # Please refer to iNNvestigate's documents for available methods.
 
-# methods = ['deep_taylor', 'gradient']
-methods = ['lrp.z']
-kwargs = [{}, {}, {}, {'pattern_type': 'relu'}]
 
 analyzer = innvestigate.create_analyzer('lrp.z', model_without_softmax)
-x = X_train[0]
+# analyzer = innvestigate.create_analyzer('sa', model_without_softmax)
+
+
+x = X_train[1]
 x = x.reshape((1, MAX_SEQ_LENGTH, 300))  
 presm = model_without_softmax.predict_on_batch(x)[0] #forward pass without softmax
-print(presm) 
-a = analyzer.analyze(x, neuron_selection=4)
+print(presm)
+# argsort method
+idxs = np.argsort(presm, axis=0)
+print(idxs)
+
+a = analyzer.analyze(x, neuron_selection=0)
 a = a['input_1']
 a = np.squeeze(a)
 a = np.sum(a, axis=1)

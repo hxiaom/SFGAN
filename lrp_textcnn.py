@@ -144,9 +144,18 @@ def main():
     model_with_softmax = textcnn_model.model
     # model_without_softmax = iutils.model_wo_softmax(textcnn_model.model)
     model_without_softmax = model_with_softmax
-    model_without_softmax.layers.pop(0)
+    model_without_softmax._layers.pop(0)
+    model_without_softmax._layers.pop(0)
     print(model_without_softmax.summary())
+    newInput = Input(shape=(MAX_SEQ_LENGTH, EMBEDDING_DIM), name='embedding_9')
+    print(newInput.shape)
+    newOutput = model_without_softmax(newInput)
+    a = Model(newInput, newOutput)
+    print('ccccccccccccccccccccccc')
+    print(a.summary())
+    aaaaaaaa
     # model_without_softmax.layers.pop(0)
+
     docs_input = Input(shape=(400,300))
     model_without_softmax = model_without_softmax(docs_input)
     model_without_softmax = Model(docs_input, model_without_softmax)
