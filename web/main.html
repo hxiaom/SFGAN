@@ -1,0 +1,74 @@
+    <!-- 车店信息页面  -->
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html" charset="utf-8"/>
+        <script src="https://cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
+        <script>window.jQuery || document.write('<script src="https://cdn.jsdelivr.net/npm/@bootcss/v3.bootcss.com@1.0.8/assets/js/vendor/jquery.min.js"><\/script>')</script>
+        <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+
+        <!-- 可选的 Bootstrap 主题文件（一般不用引入） -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css" integrity="sha384-6pzBo3FDv/PJ8r2KRkGHifhEocL+1X2rVCTTkUfGk7/0pbek5mMa1upzvWbrUbOZ" crossorigin="anonymous">
+
+        <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+         <SCRIPT >
+             var discipline1 = '{{discipline1}}';
+             var discipline2 = '{{discipline2}}';
+             var discipline3 = '{{discipline3}}';
+             var discipline1_value = '{{discipline1_value}}';
+             var discipline2_value = '{{discipline2_value}}';
+             var discipline3_value = '{{discipline3_value}}';
+         </SCRIPT>
+        
+        <title>Multi-discipline Classification</title>
+    </head>
+    
+    <body>
+        <div>
+        <nav class="navbar navbar-default navbar-fixed-top">
+            <div class="container">
+              <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">Multi-discipline Scientific Document Classification</a>
+              </div>
+            </div>
+          </nav>
+        </div>
+
+        &nbsp;
+          <div class="container">
+
+            <div class="page-header">
+                <form method="post">
+                    Abstract:<br>
+                    <textarea rows="20" cols="140" type="text" name="proposal"></textarea>                                                                                                                                                                                                                                        
+                    <br>
+                    <input type="submit" value="Submit">
+                </form> 
+            </div>
+
+            <!-- <div>
+                <h2>Discipline1: {{discipline1}} {{discipline1_value}}</h2>
+                <h2>Discipline2: {{discipline2}} {{discipline2_value}}</h2>
+                <h2>Discipline3: {{discipline3}} {{discipline3_value}}</h2>
+            </div> -->
+
+            <div>
+              <ul class="nav nav-tabs">
+                <li role="presentation" class="active" id='discipline1'><a href="#">{{discipline1}}</a></li>
+                <li role="presentation" id='discipline2'><a href="#">{{discipline2}}</a></li>
+                <li role="presentation" id='discipline3'><a href="#">{{discipline3}}</a></li>
+              </ul>
+            </div>
+            
+          </div><!-- /.container -->
+          
+    </body>
+</html>

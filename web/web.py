@@ -1,68 +1,52 @@
 import tornado.ioloop
 import tornado.web
 
-from data_loader.nsfc_data_loader import NsfcDataLoader
-
-from utils.utils import process_config_new, create_dirs, get_args
-from utils.utils import Logger
-from models.textcnn_model import TextCNNModel
-from trainers.textcnn_trainer import TextCNNModelTrainer
 
 from tensorflow.python.client import device_lib
 import tensorflow as tf
 import keras
 from keras.preprocessing.text import Tokenizer, text_to_word_sequence
 
+from tensorflow.keras.layers import Input, Dense, Dropout, Flatten, Embedding
+from tensorflow.keras.layers import Conv1D, MaxPooling1D, Concatenate
+from tensorflow.keras.models import Model
 
 import datetime
 import sys
 import numpy as np
+import random
+
+import innvestigate
+import matplotlib.pyplot as plt
+import re
+
+from utils import create_env_dir, plot_text_heatmap, get_data_plain, set_gpu, get_data_singlelabel
+
 
 class MainHandler(tornado.web.RequestHandler):
-    def initialize(self, embeddings_index):
+    def initialize(self, embeddings_index, textcnn_model):
         self.embeddings_index = embeddings_index
+        self.textcnn_model = textcnn_model
 
     def get(self):
         # self.write("Hello, world")
-        self.render("./main.html", discipline1 = '', discipline2 = '', discipline3 = '',
+        self.render("./main.html", discipline1 = 'discipline1', discipline2 = 'discipline2', discipline3 = 'discipline3',
                     discipline1_value = 0,
                     discipline2_value = 0,
                     discipline3_value = 0)
 
 
     def post(self):
+        MAX_SEQ_LENGTH = 400
+        EMBEDDING_DIM = 300
+        DROPOUT_RATE = 0.4
+        NUM_CLASSES = 91
         proposal = self.get_argument('proposal')
         print(proposal)
         abstracts = []
         abstracts.append(proposal)
 
-        try:
-            self.config = process_config_new()
-        except:
-            print("missing or invalid arguments")
-            exit(0)
         
-        # create the experiments dirs
-        create_dirs([self.config.callbacks.log_dir, self.config.callbacks.checkpoint_dir])
-
-        # set logs
-        sys.stdout = Logger(f'{self.config.callbacks.log_dir}/output.log', sys.stdout)
-        sys.stderr = Logger(f'{self.config.callbacks.log_dir}/error.log', sys.stderr)
-
-        # set GPU
-        # if don't add this, it will report ERROR: Fail to find the dnn implementation.
-        gpus = tf.config.experimental.list_physical_devices('GPU')
-        if not gpus:
-            return "No GPU available"
-        try:
-            # Currently, memory growth needs to be the same across GPUs
-            for gpu in gpus:
-                tf.config.experimental.set_memory_growth(gpu, True)
-            logical_gpus = tf.config.experimental.list_logical_devices('GPU')
-            print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
-        except RuntimeError as e:
-            print(e)
-        print(device_lib.list_local_devices(),'\n')
 
         # load NSFC data
         # proposal = ["To support urgent research to combat the ongoing outbreak of COVID-19, caused by the novel coronavirus SARS-CoV-2, the editorial teams at Nature Research have curated a collection of relevant articles. Our collection includes research into the basic biology of coronavirus infection, its detection, treatment and evolution, research into the epidemiology of emerging viral diseases, and our coverage of current events. The articles will remain free to access for as long as the outbreak remains a public health emergency of international concern"]
@@ -74,62 +58,32 @@ class MainHandler(tornado.web.RequestHandler):
 
         print('Total %s unique tokens.' % len(self.word_index))
 
-        data = np.zeros((1, self.config.data_loader.MAX_DOC_LENGTH), dtype='int32')
+        text = proposal.lower()
+        tokens = [[word for word in text_to_word_sequence(text) if re.search('[a-zA-Z]', word)]]
 
-        abs_len_list = []
-        for i, abstract in enumerate(abstracts):
-            word_tokens = text_to_word_sequence(abstract)
-            abs_len_list.append(len(word_tokens))
-            j = 0
-            for _, word in enumerate(word_tokens):
-                if ((word in tokenizer.word_index) 
-                        and (j < self.config.data_loader.MAX_DOC_LENGTH)):
-                        # delete maximum number of token.
-                        # and (tokenizer.word_index[word] < self.config.data_loader.MAX_NB_WORDS)):
+        # prepare text samples and their labels
+        embedding_matrix = np.zeros((1, 400, 300))
+        papers = []
+        for i, content in enumerate(tokens):
+            paper = []
+            counter = 0
+            for j, v in enumerate(content[:400]):
+                embedding_vector = self.embeddings_index.get(v)
+                if embedding_vector is not None:
+                    embedding_matrix[i, j, :] = embedding_vector
+                    counter = counter + 1
+                paper.append(v)
+            papers.append(paper)
 
-                        data[i, j] = tokenizer.word_index[word]
-                        j = j + 1
+        self.X_test = embedding_matrix
 
-
-        self.X_test = data
-        print('Shape of X_test tensor:', self.X_test.shape)
-        print(self.X_test)
-
-        self.embedding_matrix = np.zeros((len(self.word_index) + 1, self.config.data_loader.EMBEDDING_DIM))
-        for word, i in self.word_index.items():
-            embedding_vector = self.embeddings_index.get(word)
-            if embedding_vector is not None:
-                self.embedding_matrix[i] = embedding_vector
-
-        print("word_index: ", self.word_index)
-        print("embedding_matrix: ", self.embedding_matrix[0])
-        # create model
-        self.textcnn_model = TextCNNModel(len(self.word_index), self.embedding_matrix, self.config)
-        self.textcnn_model.model.layers[0]._name = 'input_1'
-        self.textcnn_model.model.layers[1]._name = 'embedding_7'
-        self.textcnn_model.model.layers[2]._name = 'conv1d'
-        self.textcnn_model.model.layers[3]._name = 'conv1d_1'
-        self.textcnn_model.model.layers[4]._name = 'conv1d_2'
-        self.textcnn_model.model.layers[5]._name = 'max_pooling1d'
-        self.textcnn_model.model.layers[6]._name = 'max_pooling1d_1'
-        self.textcnn_model.model.layers[7]._name = 'max_pooling1d_2'
-        self.textcnn_model.model.layers[8]._name = 'concatenate'
-        self.textcnn_model.model.layers[9]._name = 'flatten'
-        self.textcnn_model.model.layers[10]._name = 'dropout'
-        self.textcnn_model.model.layers[11]._name = 'dense'
-
-        # self.textcnn_model.model.load_weights('experiments/2021-04-07/textcnn_4/checkpoints/textcnn_4-61-2.63.hdf5', by_name=True)
-        # self.textcnn_model.model.load_weights('experiments/2021-04-07/textcnn/checkpoints/textcnn-85-2.23.hdf5', by_name=True)
-        self.textcnn_model.model.load_weights('experiments/2021-04-08/textcnn_4/checkpoints/textcnn_4-89-2.22.hdf5', by_name=True)
-        # print('model weights')
-        # print(self.textcnn_model.model.get_weights())
-        print(self.textcnn_model.model.summary())
+        print(self.textcnn_model.summary())
 
         # add record when customer make an appointment
         proposal = self.get_argument('proposal')
 
         
-        test_result = self.textcnn_model.model.predict(self.X_test)
+        test_result = self.textcnn_model.predict(self.X_test)
         print('result: ', test_result)
         # test_result_label = np.argmax(test_result, axis=1)
         # print('test result label')
@@ -174,8 +128,53 @@ class MainHandler(tornado.web.RequestHandler):
                             'H31 药理学':90}
         index_to_code = dict([(v, k) for (k, v) in code_to_index.items()])
 
-        self.textcnn_model = None
-        self.render("./main.html", 
+        # LRP methods
+        # Remove softmax layer
+        model_with_softmax = self.textcnn_model
+        # model_without_softmax = iutils.model_wo_softmax(textcnn_model.model)
+        model_without_softmax = model_with_softmax
+        print(model_without_softmax.summary())
+
+        # ['lrp', 'lrp.z', 'lrp.z_IB', 'lrp.epsilon', 'lrp.epsilon_IB', 'lrp.w_square', 
+        # 'lrp.flat', 'lrp.alpha_beta', 'lrp.alpha_2_beta_1', 'lrp.alpha_2_beta_1_IB', 
+        # 'lrp.alpha_1_beta_0', 'lrp.alpha_1_beta_0_IB', 'lrp.z_plus', 'lrp.z_plus_fast', 
+        # 'lrp.sequential_preset_a', 'lrp.sequential_preset_b', 'lrp.sequential_preset_a_flat', 
+        # 'lrp.sequential_preset_b_flat', 'lrp.rule_until_index']
+        analyzer = innvestigate.create_analyzer('lrp.alpha_1_beta_0', model_without_softmax)
+        # analyzer = innvestigate.create_analyzer('sa', model_without_softmax)
+
+        x = self.X_test[0]
+        x = x.reshape((1, MAX_SEQ_LENGTH, 300))  
+
+        presm = model_without_softmax.predict_on_batch(x)[0] #forward pass without softmax
+        print(presm)
+        # argsort method
+        idxs = np.argsort(presm, axis=0)
+        print(idxs)
+
+        neuron_list = [idxs[-1], idxs[-2], idxs[-3]]
+
+        for i, neuron in enumerate(neuron_list):
+            print(i)
+            print(neuron)
+            neuron = int(neuron)
+            lrp_score = analyzer.analyze(x, neuron_selection=neuron)
+            lrp_score = lrp_score['input_1']
+            lrp_score = np.squeeze(lrp_score)
+            lrp_score = np.sum(lrp_score, axis=1)
+            print(lrp_score)
+            print(lrp_score.shape)
+
+            # words = ['test']*400
+            plot_text_heatmap(papers[0], lrp_score.reshape(-1), title='Method: %s' % 'lrp', verbose=0)
+            plt.savefig('./img/plot%s.png' % str(3-i), format='png')
+            # plt.show()
+
+        src = "img/plot1.png?" + str(random.random())
+        # self.textcnn_model = None
+        self.render("./result.html",
+                    doc = proposal,
+                    src = src,
                     discipline1 = index_to_code[label[2]], 
                     discipline2 = index_to_code[label[1]], 
                     discipline3 = index_to_code[label[0]],
@@ -185,8 +184,12 @@ class MainHandler(tornado.web.RequestHandler):
 
 
 def make_app():
+    MAX_SEQ_LENGTH = 400
+    EMBEDDING_DIM = 300
+    DROPOUT_RATE = 0.4
+    NUM_CLASSES = 91
     embeddings_index = {}
-    f = open('./data/glove.6B.300d.txt')
+    f = open('../data/glove.6B.300d.txt')
     for line in f:
         values = line.split()
         word = values[0]
@@ -195,8 +198,38 @@ def make_app():
     f.close()
     print('Glove 300d contains total %s word vectors.' % len(embeddings_index))
 
+
+    create_env_dir('web')
+    set_gpu()
+
+    docs_input = Input(shape=(MAX_SEQ_LENGTH, EMBEDDING_DIM))
+    kernel_sizes = [3, 4, 5]
+    pooled = []
+    for kernel in kernel_sizes:
+        conv = Conv1D(filters=100,
+                    kernel_size=kernel,
+                    padding='valid',
+                    strides=1,
+                    kernel_initializer='he_uniform',
+                    activation='relu')(docs_input)
+        pool = MaxPooling1D(pool_size=400 - kernel + 1)(conv)
+        pooled.append(pool)
+    merged = Concatenate(axis=-1)(pooled)
+    flatten = Flatten()(merged)
+    drop = Dropout(rate=DROPOUT_RATE)(flatten)
+    x_output = Dense(NUM_CLASSES, 
+                    kernel_initializer='he_uniform', 
+                    activation='sigmoid', 
+                    kernel_regularizer=tf.keras.regularizers.l1(0.01))(drop)
+
+    textcnn_model = Model(inputs=docs_input, outputs=x_output)
+    textcnn_model.load_weights('../weight_6.h5', by_name=True)
+    # textcnn_model.load_weights('../experiments/2021-04-08/textcnn_4/checkpoints/textcnn_4-89-2.22.hdf5', by_name=True)
+    print('model loaded')
+
     return tornado.web.Application([
-        (r"/", MainHandler, {"embeddings_index":embeddings_index}),
+        (r"/", MainHandler, {"embeddings_index":embeddings_index, "textcnn_model":textcnn_model}),
+        (r"/(.*)", tornado.web.StaticFileHandler, {'path':'./'}),
     ])
 
 if __name__ == "__main__":

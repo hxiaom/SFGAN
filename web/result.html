@@ -20,12 +20,37 @@
              var discipline1_value = '{{discipline1_value}}';
              var discipline2_value = '{{discipline2_value}}';
              var discipline3_value = '{{discipline3_value}}';
+             var doc = '{{doc}}'
          </SCRIPT>
         
+        <script>
+        $(document).ready(function(){
+          d = new Date();
+          $("#discipline1").click(function(){
+            $("#content").attr("src","img/plot1.png?"+d.getTime());
+            $("#discipline1").addClass("active");
+            $("#discipline2").removeClass("active");
+            $("#discipline3").removeClass("active");
+          });
+          $("#discipline2").click(function(){
+            $("#content").attr("src","img/plot2.png?"+d.getTime());
+            $("#discipline1").removeClass("active");
+            $("#discipline2").addClass("active");
+            $("#discipline3").removeClass("active");
+          });
+          $("#discipline3").click(function(){
+            $("#content").attr("src","img/plot3.png?"+d.getTime());
+            $("#discipline1").removeClass("active");
+            $("#discipline2").removeClass("active");
+            $("#discipline3").addClass("active");
+          });
+        });
+        </script>
         <title>Multi-discipline Classification</title>
     </head>
     
     <body>
+        <div>
         <nav class="navbar navbar-default navbar-fixed-top">
             <div class="container">
               <div class="navbar-header">
@@ -39,28 +64,38 @@
               </div>
             </div>
           </nav>
-      
+        </div>
+
+        &nbsp;
           <div class="container">
 
-            <div>
+            <div class="page-header">
                 <form method="post">
-                    Title:<br>
-                    <textarea rows="1" cols="100" type="text" name="proposal"></textarea>                                                                                                                                                                                                                                        
-                    <br>
                     Abstract:<br>
-                    <textarea rows="20" cols="100" type="text" name="proposal"></textarea>                                                                                                                                                                                                                                        
+                    <textarea rows="20" cols="140" type="text" name="proposal" placeholder="{{doc}}"></textarea>                                                                                                                                                                                                                                        
                     <br>
                     <input type="submit" value="Submit">
                 </form> 
             </div>
 
-            <div>
+            <!-- <div>
                 <h2>Discipline1: {{discipline1}} {{discipline1_value}}</h2>
                 <h2>Discipline2: {{discipline2}} {{discipline2_value}}</h2>
                 <h2>Discipline3: {{discipline3}} {{discipline3_value}}</h2>
+            </div> -->
+
+            <div>
+              <ul class="nav nav-tabs">
+                <li role="presentation" class="active" id='discipline1'><a href="#">{{discipline1}}</a></li>
+                <li role="presentation" id='discipline2'><a href="#">{{discipline2}}</a></li>
+                <li role="presentation" id='discipline3'><a href="#">{{discipline3}}</a></li>
+              </ul>
             </div>
-      
-          </div><!-- /.container -->
             
+            <div>
+              <img src="{{src}}" class="img-responsive" id='content'>
+            </div>
+          </div><!-- /.container -->
+          
     </body>
 </html>
