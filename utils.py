@@ -134,7 +134,7 @@ def get_data_plain(FILE_NAME, CODE_TO_INDEX):
     data_df = pd.read_csv(FILE_NAME, 
                             sep='\t', 
                             header=None, 
-                            names=['code', 'abstract', 'train_or_test'])
+                            names=['code', 'subcode', 'abstract', 'train_or_test'])
     print('before shuffle')
     # print(data_df.head())
     # data_df = data_df.head()
@@ -144,12 +144,19 @@ def get_data_plain(FILE_NAME, CODE_TO_INDEX):
     # data_df = data_df.reset_index(drop=True)
     # print('after shuffle')
     print(data_df.head())
-    abstracts = data_df['abstract'].tolist()
 
-    code_index = []
+    main_code_index = []
     for i in range(len(data_df)):
-        code_index.append(CODE_TO_INDEX[data_df['code'][i]])
-    code_index = to_categorical(np.asarray(code_index), num_classes=91)
+        main_code_index.append(CODE_TO_INDEX[data_df['code'][i]])
+    main_code_index = to_categorical(np.asarray(main_code_index), num_classes=91)
+
+    sub_code_index = []
+    for i in range(len(data_df)):
+        sub_code_index.append(CODE_TO_INDEX[data_df['subcode'][i]])
+    sub_code_index = to_categorical(np.asarray(sub_code_index), num_classes=91)
+
+    code_index = np.add(main_code_index, sub_code_index)
+    code_index[np.where(code_index >1)] = 1
 
     embeddings_index = {}
     f = open('./data/glove.6B.300d.txt')
@@ -182,6 +189,61 @@ def get_data_plain(FILE_NAME, CODE_TO_INDEX):
     y_train = code_index
     return X_train, y_train, papers
 
+
+def get_data_word_deletion(FILE_NAME, CODE_TO_INDEX):
+    data_df = pd.read_csv(FILE_NAME, 
+                            sep='\t', 
+                            header=None, 
+                            names=['code', 'subcode', 'abstract', 'train_or_test'])
+    print('before shuffle')
+    # print(data_df.head())
+    # data_df = data_df.head()
+    # data_df = data_df.sample(frac=0.5)
+    SAMPLE_SIZE = len(data_df)
+    # data_df = shuffle(data_df, random_state=25)
+    # data_df = data_df.reset_index(drop=True)
+    # print('after shuffle')
+    print(data_df.head())
+
+    main_code_index = []
+    for i in range(len(data_df)):
+        main_code_index.append(CODE_TO_INDEX[data_df['code'][i]])
+    main_code_index = to_categorical(np.asarray(main_code_index), num_classes=91)
+
+    sub_code_index = []
+    for i in range(len(data_df)):
+        sub_code_index.append(CODE_TO_INDEX[data_df['subcode'][i]])
+    sub_code_index = to_categorical(np.asarray(sub_code_index), num_classes=91)
+
+    embeddings_index = {}
+    f = open('./data/glove.6B.300d.txt')
+    for line in f:
+        values = line.split()
+        word = values[0]
+        coefs = np.asarray(values[1:], dtype='float32')
+        embeddings_index[word] = coefs
+    f.close()
+    print('Glove 300d contains total %s word vectors.' % len(embeddings_index))
+
+    data_df['abs_token'] = data_df['abstract'].apply(tokenize_and_remove_stop_words)
+
+    # prepare text samples and their labels
+    embedding_matrix = np.zeros((SAMPLE_SIZE, 400, 300))
+    papers = []
+    for i, content in enumerate(data_df.abs_token.values):
+        paper = []
+        counter = 0
+        for j, v in enumerate(content[:400]):
+            embedding_vector = embeddings_index.get(v)
+            if embedding_vector is not None:
+                embedding_matrix[i, j, :] = embedding_vector
+                counter = counter + 1
+            paper.append(v)
+        papers.append(paper)
+
+    X_train = embedding_matrix
+    # X_train=np.expand_dims(embedding_matrix, axis=1),
+    return X_train, main_code_index, sub_code_index, papers
 
 def get_data_singlelabel(FILE_NAME, CODE_TO_INDEX, MAX_SEQ_LENGTH = 400, split_index=7983, EMBEDDING_DIM=300):
     data_df = pd.read_csv(FILE_NAME, 

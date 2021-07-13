@@ -86,14 +86,6 @@ textcnn_model.compile(loss='categorical_crossentropy',
 textcnn_model.load_weights('weight_6.h5', by_name=True, skip_mismatch=True)
 
 
-# history = textcnn_model.fit(
-#         X_train, y_train,
-#         epochs=NUM_EPOCHS,
-#         batch_size=64,
-#         validation_split=0.2,
-#     )
-
-
 # LRP methods
 # Remove softmax layer
 model_with_softmax = textcnn_model
