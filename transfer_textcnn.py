@@ -1,9 +1,11 @@
+import math
 import numpy as np
 
 import tensorflow as tf
 from tensorflow.keras.layers import Input, Dense, Dropout, Flatten, Embedding
 from tensorflow.keras.layers import Conv1D, MaxPooling1D, Concatenate
 from tensorflow.keras.models import Model
+import keras.backend as K
 
 import innvestigate
 import matplotlib.pyplot as plt
@@ -108,6 +110,29 @@ print("y_train shape\n", y_train.shape)
 
 
 # build model
+def discipline_rel_init(shape, dtype=None):
+    param = K.random_normal(shape, dtype=dtype)
+    param = param.numpy()
+    
+    n_hidden = 300
+    n_out = 91
+    upper_bound = math.sqrt(6) / math.sqrt(n_hidden + n_out)
+
+    pattern_num = 50
+    f = open('./cooccur.txt', 'r')
+    for i in range(pattern_num):
+        line = f.readline()
+        line_list = line.split()
+        discipline1 = int(line_list[0])
+        discipline2 = int(line_list[1])
+        count = int(line_list[2])
+
+        param[i] = 0
+        param[i][discipline1] = count * upper_bound
+        param[i][discipline2] = count * upper_bound
+    
+    return param.reshape(shape)
+
 docs_input = Input(shape=(MAX_SEQ_LENGTH,), dtype='int32')
 embedding_layer = Embedding(word_length + 1,
                             EMBEDDING_DIM,
@@ -132,11 +157,12 @@ for kernel in kernel_sizes:
 
 merged = Concatenate(axis=-1)(pooled)
 flatten = Flatten()(merged)
-drop = Dropout(rate=DROPOUT_RATE)(flatten)
+# drop = Dropout(rate=DROPOUT_RATE)(flatten)
 x_output = Dense(NUM_CLASSES, 
-                kernel_initializer='he_uniform', 
+                name='dense_new',
+                kernel_initializer=discipline_rel_init, 
                 activation='sigmoid', 
-                kernel_regularizer=tf.keras.regularizers.l1(0.01))(drop)
+                kernel_regularizer=tf.keras.regularizers.l1(0.01))(flatten)
 
 textcnn_model = Model(inputs=docs_input, outputs=x_output)
 print(textcnn_model.summary())
@@ -148,7 +174,14 @@ textcnn_model.compile(loss='categorical_crossentropy',
                 tf.keras.metrics.Recall(name='recall'), 
                 tf.keras.metrics.Precision(name='precision')])
 
+preload_dense_layer = textcnn_model.get_layer(name='dense_new')
+print('pre dense parameter: \n', preload_dense_layer.weights)
+
 textcnn_model.load_weights('weight_6.h5', by_name=True, skip_mismatch=True)
+
+afterload_dense_layer = textcnn_model.get_layer(name='dense_new')
+print('after dense parameter: \n', afterload_dense_layer.weights)
+
 history = textcnn_model.fit(
         X_train, y_train,
         epochs=NUM_EPOCHS,
@@ -156,35 +189,35 @@ history = textcnn_model.fit(
         validation_split=0.2,
     )
 
-# LRP methods
-# Remove softmax layer
-model_with_softmax = textcnn_model
-# model_without_softmax = iutils.model_wo_softmax(textcnn_model.model)
-model_without_softmax = model_with_softmax
-print(model_without_softmax.summary())
+# # LRP methods
+# # Remove softmax layer
+# model_with_softmax = textcnn_model
+# # model_without_softmax = iutils.model_wo_softmax(textcnn_model.model)
+# model_without_softmax = model_with_softmax
+# print(model_without_softmax.summary())
 
 
-analyzer = innvestigate.create_analyzer('lrp.z', model_without_softmax)
-# analyzer = innvestigate.create_analyzer('sa', model_without_softmax)
+# analyzer = innvestigate.create_analyzer('lrp.z', model_without_softmax)
+# # analyzer = innvestigate.create_analyzer('sa', model_without_softmax)
 
-x = X_train[1]
-# x = x.reshape((1, MAX_SEQ_LENGTH, 300))  
-x = x.reshape((1, MAX_SEQ_LENGTH))  
+# x = X_train[1]
+# # x = x.reshape((1, MAX_SEQ_LENGTH, 300))  
+# x = x.reshape((1, MAX_SEQ_LENGTH))  
 
-presm = model_without_softmax.predict_on_batch(x)[0] #forward pass without softmax
-print(presm)
-# argsort method
-idxs = np.argsort(presm, axis=0)
-print(idxs)
+# presm = model_without_softmax.predict_on_batch(x)[0] #forward pass without softmax
+# print(presm)
+# # argsort method
+# idxs = np.argsort(presm, axis=0)
+# print(idxs)
 
-a = analyzer.analyze(x, neuron_selection=0)
-a = a['input_1']
-# a = np.squeeze(a)
-# a = np.sum(a, axis=1)
-print(a)
-print(a.shape)
+# a = analyzer.analyze(x, neuron_selection=0)
+# a = a['input_1']
+# # a = np.squeeze(a)
+# # a = np.sum(a, axis=1)
+# print(a)
+# print(a.shape)
 
-# words = ['test']*400
-plot_text_heatmap(words[0], a.reshape(-1), title='Method: %s' % 'lrp', verbose=0)
-plt.savefig('./plot1.png', format='png')
-plt.show()
+# # words = ['test']*400
+# plot_text_heatmap(words[0], a.reshape(-1), title='Method: %s' % 'lrp', verbose=0)
+# plt.savefig('./plot1.png', format='png')
+# plt.show()
