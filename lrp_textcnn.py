@@ -83,7 +83,8 @@ textcnn_model.compile(loss='categorical_crossentropy',
                 tf.keras.metrics.Recall(name='recall'), 
                 tf.keras.metrics.Precision(name='precision')])
 # textcnn_model.load_weights('experiments/2021-05-11/textcnn_4/checkpoints/textcnn_4-40-3.34.hdf5', by_name=True, skip_mismatch=True)
-textcnn_model.load_weights('weight_6.h5', by_name=True, skip_mismatch=True)
+# textcnn_model.load_weights('weight_6.h5', by_name=True, skip_mismatch=True)
+textcnn_model.load_weights('finetune_weights.h5', by_name=True, skip_mismatch=True)
 
 
 # LRP methods

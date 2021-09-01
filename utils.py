@@ -319,6 +319,90 @@ def get_data_singlelabel(FILE_NAME, CODE_TO_INDEX, MAX_SEQ_LENGTH = 400, split_i
 
     return (X_train, y_train, len(word_index), embedding_matrix, papers)
 
+
+def get_data_multilabel(FILE_NAME, CODE_TO_INDEX, MAX_SEQ_LENGTH = 400, split_index=7983, EMBEDDING_DIM=300):
+    data_df = pd.read_csv(FILE_NAME, 
+                            sep='\t', 
+                            header=None, 
+                            names=['code', 'subcode','abstract', 'train_or_test'])
+    print('before shuffle')
+    print(data_df.head())
+    data_df = shuffle(data_df, random_state=25)
+    data_df = data_df.reset_index(drop=True)
+    print('after shuffle')
+    print(data_df.head())
+    abstracts = data_df['abstract'].tolist()
+
+    main_code_index = []
+    for i in range(len(data_df)):
+        main_code_index.append(CODE_TO_INDEX[data_df['code'][i]])
+    main_code_index = to_categorical(np.asarray(main_code_index), num_classes=91)
+
+    sub_code_index = []
+    for i in range(len(data_df)):
+        sub_code_index.append(CODE_TO_INDEX[data_df['subcode'][i]])
+    sub_code_index = to_categorical(np.asarray(sub_code_index), num_classes=91)
+
+    code_index = np.add(main_code_index, sub_code_index)
+    code_index[np.where(code_index >1)] = 1
+
+    tokenizer = Tokenizer()
+    tokenizer.fit_on_texts(abstracts)
+    word_index = tokenizer.word_index
+    print('Total %s unique tokens.' % len(word_index))
+    data = np.zeros((len(data_df), MAX_SEQ_LENGTH), dtype='int32')
+
+    abs_len_list = []
+    papers = []
+    for i, abstract in enumerate(abstracts):
+        paper = []
+        word_tokens = text_to_word_sequence(abstract)
+        abs_len_list.append(len(word_tokens))
+        j = 0
+        for _, word in enumerate(word_tokens):
+            if ((word in tokenizer.word_index) 
+                    and (j < MAX_SEQ_LENGTH)):
+                    # delete maximum number of token.
+                    # and (tokenizer.word_index[word] < self.config.data_loader.MAX_NB_WORDS)):
+
+                    data[i, j] = tokenizer.word_index[word]
+                    paper.append(word)
+                    j = j + 1
+        papers.append(paper)
+
+    abs_len_arr = np.array(abs_len_list)
+    print("abstract length 0.5 quantile", np.quantile(abs_len_arr, 0.5))
+
+    X_train = data
+    y_train = code_index
+    # X_train = data[:split_index,:]
+    # y_train = code_index[:split_index,:]
+    # X_test = data[split_index:,:]
+    # y_test = code_index[split_index:,:]
+    # print('Shape of X_train tensor:', X_train.shape)
+    # print('Shape of y_train tensor:', y_train.shape)
+    # print('Shape of X_test tensor:', X_test.shape)
+    # print('Shape of y_test tensor:', y_test.shape)
+
+    embeddings_index = {}
+    f = open('./data/glove.6B.300d.txt')
+    for line in f:
+        values = line.split()
+        word = values[0]
+        coefs = np.asarray(values[1:], dtype='float32')
+        embeddings_index[word] = coefs
+    f.close()
+    print('Glove 300d contains total %s word vectors.' % len(embeddings_index))
+
+    embedding_matrix = np.random.random((len(word_index) + 1, EMBEDDING_DIM))
+    for word, i in word_index.items():
+        embedding_vector = embeddings_index.get(word)
+        if embedding_vector is not None:
+            embedding_matrix[i] = embedding_vector
+
+    return (X_train, y_train, len(word_index), embedding_matrix, papers)
+
+
 def set_gpu():
     # set GPU
     # if don't add this, it will report ERROR: Fail to find the dnn implementation.

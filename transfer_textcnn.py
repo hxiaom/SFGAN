@@ -10,14 +10,14 @@ import keras.backend as K
 import innvestigate
 import matplotlib.pyplot as plt
 
-from utils import create_env_dir, plot_text_heatmap, get_data_plain, set_gpu, get_data_singlelabel
+from utils import create_env_dir, plot_text_heatmap, get_data_plain, set_gpu, get_data_multilabel
 
 EXP_NAME = 'textcnn'
 MAX_SEQ_LENGTH = 400
 EMBEDDING_DIM = 300
 NUM_CLASSES = 91
 DROPOUT_RATE = 0.4
-NUM_EPOCHS = 1
+NUM_EPOCHS = 10
 FILE_NAME = './data/multilabel.txt'
 split_index = 7983
 CODE_TO_INDEX = {'A01':0, 'A02':1, 'A03':2, 'A04':3, 'A05':4,
@@ -41,75 +41,19 @@ CODE_TO_INDEX = {'A01':0, 'A02':1, 'A03':2, 'A04':3, 'A05':4,
                 'H31':90}
 
 create_env_dir(EXP_NAME)
-
 set_gpu()
 
-
-# # load NSFC data
-# print('Load NSFC data.')
-# X_train, y_train, words = get_data_plain(FILE_NAME, CODE_TO_INDEX)
-# print('NSFC data loaded.')
-# print("X_train shape\n", X_train.shape)
-# print("y_train shape\n", y_train.shape)
-
-
-# # build model
-# docs_input = Input(shape=(MAX_SEQ_LENGTH, EMBEDDING_DIM))
-# kernel_sizes = [3, 4, 5]
-# pooled = []
-# for kernel in kernel_sizes:
-#     conv = Conv1D(filters=100,
-#                 kernel_size=kernel,
-#                 padding='valid',
-#                 strides=1,
-#                 kernel_initializer='he_uniform',
-#                 activation='relu')(docs_input)
-#     pool = MaxPooling1D(pool_size=400 - kernel + 1)(conv)
-#     pooled.append(pool)
-
-# merged = Concatenate(axis=-1)(pooled)
-# flatten = Flatten()(merged)
-# drop = Dropout(rate=DROPOUT_RATE)(flatten)
-# x_output = Dense(NUM_CLASSES, 
-#                 kernel_initializer='he_uniform', 
-#                 activation='sigmoid', 
-#                 kernel_regularizer=tf.keras.regularizers.l1(0.01))(drop)
-
-# textcnn_model = Model(inputs=docs_input, outputs=x_output)
-# print(textcnn_model.summary())
-
-# train model
-# textcnn_model.compile(loss='categorical_crossentropy',
-#         optimizer='adam',
-#         metrics=['acc', 
-#                 tf.keras.metrics.Recall(name='recall'), 
-#                 tf.keras.metrics.Precision(name='precision')])
-# # textcnn_model.load_weights('experiments/2021-05-11/textcnn_4/checkpoints/textcnn_4-40-3.34.hdf5', by_name=True, skip_mismatch=True)
-# textcnn_model.load_weights('weight_6.h5', by_name=True, skip_mismatch=True)
-
-
-# history = textcnn_model.fit(
-#         X_train, y_train,
-#         epochs=NUM_EPOCHS,
-#         batch_size=64,
-#         validation_split=0.2,
-#     )
-
-# # save model
-# textcnn_model.save_weights('./weight_6.h5')
-# # textcnn_trainer.save()
-
-
-# Pre train using single discipline proposal
+# Fine tune using multi discipline proposal
 # load NSFC data
 print('Load NSFC data.')
-X_train, y_train, word_length, embedding_matrix, words = get_data_singlelabel(FILE_NAME, CODE_TO_INDEX)
+X_train, y_train, word_length, embedding_matrix, words = get_data_multilabel(FILE_NAME, CODE_TO_INDEX)
 print('NSFC data loaded.')
 print("X_train shape\n", X_train.shape)
 print("y_train shape\n", y_train.shape)
 
 
 # build model
+# coocurrence relationship initializaiton
 def discipline_rel_init(shape, dtype=None):
     param = K.random_normal(shape, dtype=dtype)
     param = param.numpy()
@@ -154,10 +98,8 @@ for kernel in kernel_sizes:
                 activation='relu')(embedded_docs)
     pool = MaxPooling1D(pool_size=400 - kernel + 1)(conv)
     pooled.append(pool)
-
 merged = Concatenate(axis=-1)(pooled)
 flatten = Flatten()(merged)
-# drop = Dropout(rate=DROPOUT_RATE)(flatten)
 x_output = Dense(NUM_CLASSES, 
                 name='dense_new',
                 kernel_initializer=discipline_rel_init, 
@@ -168,7 +110,7 @@ textcnn_model = Model(inputs=docs_input, outputs=x_output)
 print(textcnn_model.summary())
 
 # train model
-textcnn_model.compile(loss='categorical_crossentropy',
+textcnn_model.compile(loss='binary_crossentropy',
         optimizer='adam',
         metrics=['acc', 
                 tf.keras.metrics.Recall(name='recall'), 
@@ -177,7 +119,7 @@ textcnn_model.compile(loss='categorical_crossentropy',
 preload_dense_layer = textcnn_model.get_layer(name='dense_new')
 print('pre dense parameter: \n', preload_dense_layer.weights)
 
-textcnn_model.load_weights('weight_6.h5', by_name=True, skip_mismatch=True)
+textcnn_model.load_weights('pretrain_weights.h5', by_name=True, skip_mismatch=True)
 
 afterload_dense_layer = textcnn_model.get_layer(name='dense_new')
 print('after dense parameter: \n', afterload_dense_layer.weights)
@@ -189,35 +131,6 @@ history = textcnn_model.fit(
         validation_split=0.2,
     )
 
-# # LRP methods
-# # Remove softmax layer
-# model_with_softmax = textcnn_model
-# # model_without_softmax = iutils.model_wo_softmax(textcnn_model.model)
-# model_without_softmax = model_with_softmax
-# print(model_without_softmax.summary())
+textcnn_model.save_weights('./finetune_weights.h5')
 
 
-# analyzer = innvestigate.create_analyzer('lrp.z', model_without_softmax)
-# # analyzer = innvestigate.create_analyzer('sa', model_without_softmax)
-
-# x = X_train[1]
-# # x = x.reshape((1, MAX_SEQ_LENGTH, 300))  
-# x = x.reshape((1, MAX_SEQ_LENGTH))  
-
-# presm = model_without_softmax.predict_on_batch(x)[0] #forward pass without softmax
-# print(presm)
-# # argsort method
-# idxs = np.argsort(presm, axis=0)
-# print(idxs)
-
-# a = analyzer.analyze(x, neuron_selection=0)
-# a = a['input_1']
-# # a = np.squeeze(a)
-# # a = np.sum(a, axis=1)
-# print(a)
-# print(a.shape)
-
-# # words = ['test']*400
-# plot_text_heatmap(words[0], a.reshape(-1), title='Method: %s' % 'lrp', verbose=0)
-# plt.savefig('./plot1.png', format='png')
-# plt.show()

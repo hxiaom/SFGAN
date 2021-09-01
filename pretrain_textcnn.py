@@ -3,7 +3,6 @@ from tensorflow.keras.layers import Input, Dense, Dropout, Flatten, Embedding
 from tensorflow.keras.layers import Conv1D, MaxPooling1D, Concatenate
 from tensorflow.keras.models import Model
 
-
 from utils import create_env_dir, get_data_singlelabel, set_gpu
 
 EXP_NAME = 'textcnn'
@@ -72,11 +71,10 @@ for kernel in kernel_sizes:
 
 merged = Concatenate(axis=-1)(pooled)
 flatten = Flatten()(merged)
-drop = Dropout(rate=DROPOUT_RATE)(flatten)
 x_output = Dense(NUM_CLASSES, 
                 kernel_initializer='he_uniform', 
                 activation='sigmoid', 
-                kernel_regularizer=tf.keras.regularizers.l1(0.01))(drop)
+                kernel_regularizer=tf.keras.regularizers.l1(0.01))(flatten)
 
 textcnn_model = Model(inputs=docs_input, outputs=x_output)
 print(textcnn_model.summary())
@@ -96,5 +94,5 @@ history = textcnn_model.fit(
     )
 
 # save model
-textcnn_model.save_weights('./weight_6.h5')
+textcnn_model.save_weights('./pretrain_weights.h5')
 # textcnn_trainer.save()
